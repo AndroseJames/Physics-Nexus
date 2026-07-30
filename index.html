@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Physics Nexus">
+<meta name="theme-color" content="#07090f" id="themeColorMeta">
+<title>PHYSICS NEXUS</title>
+<style>
+/* ── THEME TOKENS ── */
+:root,[data-theme="dark"]{
+  --bg:#07090f;--bg2:#0d1120;
+  --panel:rgba(13,18,38,0.92);--panel2:rgba(20,26,52,0.95);
+  --glass:rgba(255,255,255,0.045);--rim:rgba(255,255,255,0.09);
+  --t1:#e8eaf6;--t2:#7986cb;--t3:#4a5568;
+  --shadow:0 8px 32px rgba(0,0,0,.55);
+  --card-bg:rgba(13,18,38,0.92);
+  --opt-hover:rgba(126,232,250,0.07);
+  --explain-bg:rgba(126,232,250,0.05);
+  --explain-border:rgba(126,232,250,0.18);
+  --explain-text:#b0bec5;
+  --theme-icon:☀️;
+}
+[data-theme="light"]{
+  --bg:#f0f4ff;--bg2:#e8eef8;
+  --panel:rgba(255,255,255,0.96);--panel2:rgba(248,250,255,0.98);
+  --glass:rgba(0,0,0,0.03);--rim:rgba(0,0,0,0.10);
+  --t1:#1a1f3c;--t2:#4a5568;--t3:#9aa5b4;
+  --shadow:0 4px 20px rgba(0,0,0,.12);
+  --card-bg:rgba(255,255,255,0.96);
+  --opt-hover:rgba(99,102,241,0.07);
+  --explain-bg:rgba(99,102,241,0.04);
+  --explain-border:rgba(99,102,241,0.20);
+  --explain-text:#374151;
+  --theme-icon:🌙;
+}
+
+/* ── ACCENT (same both themes) ── */
+:root{
+  --accent:#7ee8fa;--mag:#e040fb;--heat:#ff6b35;--sound:#00e676;
+  --elec:#ffe57f;--motion:#64ffda;--lens:#80deea;--meas:#b39ddb;
+  --correct:#00c853;--wrong:#ff5252;
+}
+
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;
+  min-height:100vh;min-height:-webkit-fill-available;
+  overflow-x:hidden;
+  /* Safe area for notch/home indicator */
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── PARTICLE CANVAS ── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6}
+[data-theme="light"] #bg{opacity:.18}
+
+/* ── LAYOUT ── */
+.shell{
+  position:relative;z-index:2;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:max(16px, env(safe-area-inset-top)) 16px max(32px, calc(env(safe-area-inset-bottom) + 16px));
+}
+.screen{display:none;width:100%;max-width:680px;flex-direction:column;align-items:center;gap:14px;animation:fadeIn .22s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── GLASS CARD ── */
+.card{
+  background:var(--card-bg);
+  border:1px solid var(--rim);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  padding:20px;width:100%;
+}
+.card.slim{padding:14px 18px}
+.card.xs{padding:10px 14px}
+[data-theme="light"] .card{box-shadow:0 2px 12px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.06)}
+[data-theme="light"] .stat{background:rgba(255,255,255,.9);border-color:rgba(0,0,0,.1)}
+[data-theme="light"] .stat-l{color:#6b7280}
+[data-theme="light"] .lbl{color:#6b7280}
+[data-theme="light"] .q-cat-name{color:#6b7280}
+[data-theme="light"] .q-diff{color:#374151;border-color:rgba(0,0,0,.15)}
+[data-theme="light"] .sdot{background:#d1d5db}
+[data-theme="light"] .opt-lbl{background:#e5e7eb;color:#374151}
+[data-theme="light"] .t-bg{stroke:#e5e7eb}
+[data-theme="light"] .t-fg{stroke:#4f46e5}
+[data-theme="light"] .t-center{color:#1a1f3c}
+[data-theme="light"] .explain-text{color:#374151}
+
+/* ── LOGO ── */
+.logo{
+  font-family:'SF Mono','Courier New',monospace;
+  font-size:clamp(1.6rem,7vw,2.8rem);
+  font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  background:linear-gradient(135deg,#7ee8fa,#e040fb 55%,#ffe57f);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-align:center;
+  filter:drop-shadow(0 0 20px rgba(126,232,250,.3));
+  line-height:1.1;
+}
+.logo-sub{font-size:.62rem;letter-spacing:.35em;color:var(--t2);text-transform:uppercase;text-align:center;margin-top:4px}
+[data-theme="light"] .logo{filter:drop-shadow(0 0 12px rgba(126,232,250,.2))}
+
+/* ── TYPOGRAPHY ── */
+h2{font-size:1rem;font-weight:700;margin-bottom:10px;color:var(--t1);letter-spacing:.01em}
+.lbl{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--t2)}
+
+/* ── TOP NAV BAR ── */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  width:100%;max-width:680px;
+  padding:6px 0 2px;
+}
+.theme-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--glass);border:1px solid var(--rim);
+  font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.theme-btn:hover{background:var(--opt-hover);transform:scale(1.08)}
+.theme-btn:active{transform:scale(.94)}
+
+/* ── XP BAR ── */
+.xp-strip{width:100%;height:3px;background:var(--glass);border-radius:2px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--mag),var(--accent));border-radius:2px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+
+/* ── STAT ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.stat{background:var(--glass);border:1px solid var(--rim);border-radius:14px;padding:10px 6px;text-align:center}
+.stat-v{font-size:1.2rem;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;color:var(--accent)}
+[data-theme="light"] .stat-v{color:#4f46e5}
+[data-theme="light"] .hud-big{color:#1a1f3c !important}
+[data-theme="light"] #qScore{color:#4f46e5 !important}
+[data-theme="light"] #qXP{color:#7c3aed !important}
+[data-theme="light"] .streak-badge{color:#059669}
+[data-theme="light"] .level-badge{background:linear-gradient(135deg,#7c3aed,#4f46e5)}
+[data-theme="light"] .xp-fill{background:linear-gradient(90deg,#7c3aed,#4f46e5)}
+[data-theme="light"] .logo{filter:drop-shadow(0 0 8px rgba(79,70,229,.25))}
+[data-theme="light"] .exp-lbl{color:#4f46e5}
+[data-theme="light"] .btn-next{background:linear-gradient(135deg,rgba(79,70,229,.15),rgba(124,58,237,.15));border-color:rgba(79,70,229,.4);color:#4f46e5}
+.stat-l{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);margin-top:2px}
+
+/* ── LEVEL STRIP ── */
+.level-strip{display:flex;align-items:center;gap:14px;width:100%}
+.level-badge{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--mag),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'SF Mono','Courier New',monospace;font-size:1.3rem;font-weight:800;color:#fff;
+  box-shadow:0 0 18px rgba(126,232,250,.28);
+}
+.level-info{flex:1;min-width:0}
+.streak-badge{font-size:1rem;font-weight:700;font-family:'SF Mono','Courier New',monospace;color:var(--sound);flex-shrink:0}
+
+/* ── DIFF BUTTONS ── */
+.diff-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.diff-btn{
+  padding:9px 22px;border-radius:50px;
+  border:1.5px solid var(--rim);background:var(--glass);
+  color:var(--t2);font-size:.8rem;letter-spacing:.05em;
+  transition:all .18s;font-family:'SF Mono','Courier New',monospace;
+  font-weight:600;
+}
+.diff-btn.on{background:rgba(126,232,250,.14);color:var(--accent);border-color:var(--accent);box-shadow:0 0 14px rgba(126,232,250,.18)}
+.diff-btn:active{transform:scale(.95)}
+
+/* ── CATEGORY GRID ── */
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:500px){.cat-grid{grid-template-columns:repeat(4,1fr)}}
+.cat-btn{
+  background:var(--glass);border:1.5px solid var(--rim);border-radius:16px;
+  padding:16px 10px;text-align:center;color:var(--t1);
+  position:relative;overflow:hidden;transition:all .22s;
+}
+.cat-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--ca),var(--cb));opacity:0;transition:opacity .22s;border-radius:14px;pointer-events:none}
+.cat-btn:hover::after,.cat-btn:active::after{opacity:.15}
+.cat-btn:hover{border-color:var(--ca);box-shadow:0 4px 20px -4px var(--ca);transform:translateY(-2px)}
+.cat-btn:active{transform:scale(.96)}
+.cat-icon{font-size:1.7rem;display:block;margin-bottom:6px;position:relative;z-index:1}
+.cat-name{font-size:.7rem;font-weight:700;letter-spacing:.02em;position:relative;z-index:1;line-height:1.2}
+.cat-cnt{font-size:.58rem;color:var(--t2);margin-top:3px;position:relative;z-index:1}
+
+/* ── BIG ACTION BTN ── */
+.btn-primary{
+  width:100%;padding:16px;border-radius:16px;
+  background:linear-gradient(135deg,rgba(126,232,250,.18),rgba(224,64,251,.18));
+  border:1.5px solid rgba(126,232,250,.4);
+  color:var(--accent);font-size:1rem;font-weight:700;letter-spacing:.04em;
+  transition:all .2s;font-family:'SF Mono','Courier New',monospace;
+  box-shadow:0 4px 24px rgba(126,232,250,.12);
+}
+.btn-primary:hover{box-shadow:0 0 28px rgba(126,232,250,.28);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(.97)}
+[data-theme="light"] .btn-primary{background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(168,85,247,.12));border-color:rgba(99,102,241,.4);color:#4f46e5;box-shadow:0 4px 16px rgba(99,102,241,.15)}
+
+/* ── HUD ── */
+.hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hud-score{text-align:center;min-width:60px}
+.hud-big{font-size:1.4rem;font-weight:800;font-family:'SF Mono','Courier New',monospace}
+.hud-center{flex:1;min-width:0}
+.prog-wrap{width:100%;height:5px;background:var(--glass);border-radius:3px;overflow:hidden;margin-top:5px}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--mag));transition:width .4s ease}
+.sdots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:7px}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--rim);transition:all .25s;flex-shrink:0}
+.sdot.hit{background:var(--correct);box-shadow:0 0 6px var(--correct)}
+.sdot.miss{background:var(--wrong)}
+
+/* ── TIMER ── */
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.timer-ring{position:relative;width:52px;height:52px}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring circle{fill:none;stroke-width:4}
+.t-bg{stroke:var(--rim)}
+.t-fg{stroke:var(--accent);stroke-dasharray:138;stroke-linecap:round;transition:stroke-dashoffset .95s linear,stroke .3s}
+.t-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'SF Mono','Courier New',monospace;font-size:.85rem;font-weight:800}
+
+/* ── SOUND BTN ── */
+.snd-btn{
+  padding:6px 14px;border-radius:50px;
+  background:var(--glass);border:1px solid var(--rim);
+  color:var(--t2);font-size:.75rem;align-self:flex-end;
+  transition:all .18s;
+}
+.snd-btn:active{transform:scale(.94)}
+
+/* ── QUESTION CARD ── */
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.q-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.q-cat-name{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t2)}
+.q-diff{font-size:.58rem;background:var(--glass);border:1px solid var(--rim);border-radius:50px;padding:2px 8px;color:var(--t2);font-family:'SF Mono','Courier New',monospace;font-weight:600}
+.q-text{font-size:clamp(.95rem,2.6vw,1.05rem);line-height:1.65;font-weight:500;margin-bottom:14px;color:var(--t1)}
+
+/* ── DIAGRAM ── */
+.diagram-wrap{
+  width:100%;border-radius:14px;overflow:hidden;
+  border:1px solid var(--rim);
+  background:rgba(0,0,0,.3);
+  margin-bottom:14px;
+  display:flex;align-items:center;justify-content:center;
+  min-height:140px;max-height:240px;
+}
+[data-theme="light"] .diagram-wrap{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
+.diagram-wrap svg{width:100%;height:auto;display:block;max-height:240px}
+
+/* ── OPTIONS ── */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{
+  background:var(--glass);border:1.5px solid var(--rim);border-radius:14px;
+  padding:13px 14px;color:var(--t1);font-size:clamp(.84rem,2.4vw,.92rem);
+  line-height:1.45;text-align:left;transition:all .18s;
+  display:flex;align-items:flex-start;gap:10px;width:100%;
+}
+.opt:hover:not(:disabled){background:var(--opt-hover);border-color:rgba(126,232,250,.4);transform:translateX(2px)}
+.opt:active:not(:disabled){transform:scale(.98)}
+.opt-lbl{
+  font-family:'SF Mono','Courier New',monospace;font-size:.65rem;font-weight:700;
+  background:var(--rim);border-radius:6px;padding:3px 8px;
+  flex-shrink:0;margin-top:1px;color:var(--t2);min-width:26px;text-align:center;
+}
+.opt.correct{background:rgba(0,200,83,.12);border-color:var(--correct);box-shadow:0 0 16px rgba(0,200,83,.18)}
+.opt.correct .opt-lbl{background:var(--correct);color:#fff}
+.opt.wrong{background:rgba(255,82,82,.12);border-color:var(--wrong);box-shadow:0 0 14px rgba(255,82,82,.15)}
+.opt.wrong .opt-lbl{background:var(--wrong);color:#fff}
+.opt:disabled{cursor:default;opacity:.9}
+[data-theme="light"] .opt:hover:not(:disabled){border-color:rgba(99,102,241,.4)}
+
+/* ── EXPLANATION ── */
+.explain{
+  background:var(--explain-bg);border:1px solid var(--explain-border);
+  border-radius:12px;padding:12px 16px;font-size:.82rem;line-height:1.7;
+  color:var(--explain-text);display:none;margin-top:10px;
+}
+.explain.show{display:block;animation:fadeIn .2s ease}
+.exp-lbl{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-weight:700}
+
+/* ── NEXT BTN ── */
+.next-wrap{width:100%;display:flex;justify-content:flex-end;margin-top:4px}
+.btn-next{
+  padding:12px 28px;border-radius:50px;
+  background:linear-gradient(135deg,rgba(126,232,250,.2),rgba(224,64,251,.2));
+  border:1.5px solid rgba(126,232,250,.4);
+  color:var(--accent);font-size:.9rem;font-weight:700;
+  font-family:'SF Mono','Courier New',monospace;letter-spacing:.04em;
+  transition:all .18s;
+}
+.btn-next:active{transform:scale(.95)}
+
+/* ── GHOST BTN ── */
+.btn-ghost{
+  padding:10px 22px;border-radius:50px;
+  background:var(--glass);border:1px solid var(--rim);
+  color:var(--t2);font-size:.8rem;transition:all .18s;
+}
+.btn-ghost:active{transform:scale(.95)}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%}
+
+/* ── RESULTS ── */
+.res-score{
+  font-family:'SF Mono','Courier New',monospace;
+  font-size:clamp(2.8rem,11vw,4.5rem);font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--mag));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-align:center;line-height:1;
+}
+.grade{
+  font-family:'SF Mono','Courier New',monospace;font-size:1.1rem;font-weight:700;
+  text-align:center;padding:12px;border-radius:14px;margin:12px auto;max-width:300px;width:100%;
+}
+.breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:360px){.breakdown{grid-template-columns:repeat(2,1fr)}}
+.bitem{background:var(--glass);border:1px solid var(--rim);border-radius:12px;padding:11px 8px;text-align:center}
+.bval{font-size:1.1rem;font-weight:800;font-family:'SF Mono','Courier New',monospace}
+.blbl{font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t2);margin-top:3px}
+
+/* ── ACHIEVEMENTS ── */
+.ach-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.ach{background:var(--glass);border:1px solid var(--rim);border-radius:50px;padding:6px 14px;font-size:.76rem;display:flex;align-items:center;gap:5px}
+.ach.on{border-color:var(--elec);color:var(--elec);background:rgba(255,229,127,.06)}
+
+/* ── LEADERBOARD ── */
+.lb-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--rim)}
+.lb-row:last-child{border-bottom:none}
+
+/* ── XP FLASH ── */
+.xp-flash{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);font-family:'SF Mono','Courier New',monospace;font-size:1.8rem;font-weight:800;pointer-events:none;z-index:999;opacity:0;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.xp-flash.pop{animation:xpPop .8s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes xpPop{0%{opacity:1;transform:translate(-50%,-60%)}80%{opacity:.8}100%{opacity:0;transform:translate(-50%,-130%)}}
+
+/* ── KB HINTS ── */
+.kb-hints{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;opacity:.4}
+.kb{font-size:.64rem;color:var(--t2)}
+.key{background:var(--glass);border:1px solid var(--rim);border-radius:4px;padding:1px 6px;font-family:'SF Mono','Courier New',monospace;font-size:.6rem}
+
+/* ── HIDDEN ── */
+.hidden{display:none!important}
+
+/* ── ANIMATIONS ── */
+.ray-anim{animation:rayFade 2s ease-in-out infinite alternate}
+@keyframes rayFade{0%{opacity:.55}100%{opacity:1}}
+.pulse-anim{animation:pulseGlow 1.8s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* ── MOBILE TOUCH SCROLL FIX ── */
+.screen{-webkit-overflow-scrolling:touch}
+
+/* ── LIGHT MODE SVG DIAGRAMS ── */
+[data-theme="light"] .diagram-wrap svg rect[height="220"]{fill:#f8faff !important}
+[data-theme="light"] .diagram-wrap svg text{fill:#1a1f3c}
+
+/* ── SAFE AREA SPACING ── */
+@supports(padding:env(safe-area-inset-bottom)){
+  .shell{padding-bottom:max(32px,calc(env(safe-area-inset-bottom)+16px))}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="xp-flash" id="xpFlash"></div>
+<div class="shell">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="font-family:'SF Mono','Courier New',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--t2);text-transform:uppercase">Physics Nexus</div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme">☀️</button>
+</div>
+
+<!-- ══ HOME ══ -->
+<div class="screen active" id="sHome">
+
+  <div style="text-align:center;padding:4px 0 2px">
+    <div class="logo">PHYSICS<br>NEXUS</div>
+    <div class="logo-sub">Visual Science Lab</div>
+  </div>
+
+  <!-- Level + XP -->
+  <div class="card slim">
+    <div class="level-strip">
+      <div class="level-badge" id="hLevel">1</div>
+      <div class="level-info">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span class="lbl">Experience</span><span class="lbl" id="hXPLabel">0 / 300</span>
+        </div>
+        <div class="xp-strip"><div class="xp-fill" id="hXPBar" style="width:0%"></div></div>
+      </div>
+      <div class="streak-badge" id="hStreak">🔥0</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat"><div class="stat-v" id="sGames">0</div><div class="stat-l">Games</div></div>
+    <div class="stat"><div class="stat-v"><span id="sBest">0</span><span style="font-size:.72em;font-weight:600;opacity:.75">%</span></div><div class="stat-l">Best</div></div>
+    <div class="stat"><div class="stat-v" id="sXP">0</div><div class="stat-l">XP</div></div>
+    <div class="stat"><div class="stat-v" id="sAns">0</div><div class="stat-l">Answered</div></div>
+  </div>
+
+  <!-- Difficulty -->
+  <div class="card xs" style="text-align:center">
+    <div class="lbl" style="margin-bottom:8px">Difficulty</div>
+    <div class="diff-row">
+      <button class="diff-btn on" data-d="easy" onclick="setDiff(this)">EASY</button>
+      <button class="diff-btn" data-d="medium" onclick="setDiff(this)">MEDIUM</button>
+      <button class="diff-btn" data-d="hard" onclick="setDiff(this)">HARD</button>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="card" style="padding:16px">
+    <h2>Lab Modules</h2>
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+
+  <button class="btn-primary" onclick="startGame('all')">⚡ Full Spectrum — All Topics</button>
+
+  <!-- Leaderboard -->
+  <div class="card slim">
+    <h2>Top Scores</h2>
+    <div id="lbBox"></div>
+  </div>
+
+  <!-- KB hints (desktop only) -->
+  <div class="kb-hints">
+    <span class="kb"><span class="key">1-4</span> Answer</span>
+    <span class="kb"><span class="key">Enter</span> Next</span>
+    <span class="kb"><span class="key">S</span> Sound</span>
+  </div>
+
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div class="screen" id="sQuiz">
+
+  <!-- HUD -->
+  <div class="card slim hud">
+    <div class="hud-score">
+      <div class="lbl">SCORE</div>
+      <div class="hud-big" id="qScore" style="color:var(--accent)">0</div>
+    </div>
+    <div class="hud-center">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span id="qNum" class="lbl">Q 1/15</span>
+        <span id="qCatLabel" class="lbl">—</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="sdots" id="sdots"></div>
+    </div>
+    <div class="timer-wrap">
+      <div class="lbl">TIME</div>
+      <div class="timer-ring">
+        <svg viewBox="0 0 52 52" width="52" height="52">
+          <circle class="t-bg" cx="26" cy="26" r="22"/>
+          <circle class="t-fg" id="tArc" cx="26" cy="26" r="22"/>
+        </svg>
+        <div class="t-center" id="tNum">30</div>
+      </div>
+    </div>
+    <div class="hud-score">
+      <div class="lbl">XP</div>
+      <div class="hud-big" id="qXP" style="color:var(--mag)">0</div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+    <button class="snd-btn" id="sndBtn" onclick="toggleSnd()">🔊 ON</button>
+    <button class="btn-ghost" onclick="goHome()" style="font-size:.75rem;padding:8px 16px">✕ Exit</button>
+  </div>
+
+  <!-- Question -->
+  <div class="card" id="qCard">
+    <div class="q-meta">
+      <div class="q-dot" id="qDot"></div>
+      <div class="q-cat-name" id="qCatName"></div>
+      <div class="q-diff" id="qDiff"></div>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="diagram-wrap" id="diagWrap"></div>
+    <div class="opts" id="optsGrid"></div>
+    <div class="explain" id="explainBox">
+      <div class="exp-lbl">Lab Note</div>
+      <div id="expText"></div>
+    </div>
+  </div>
+
+  <div class="next-wrap">
+    <button class="btn-next hidden" id="nextBtn" onclick="nextQ()">Next →</button>
+  </div>
+
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="sResults">
+  <div class="card" style="text-align:center">
+    <div class="res-score" id="rScore">0</div>
+    <div class="lbl" style="margin-top:4px">POINTS EARNED</div>
+    <div class="grade" id="rGrade"></div>
+    <div class="breakdown" id="rBreak"></div>
+  </div>
+  <div class="card"><h2>Achievements</h2><div class="ach-row" id="rAch"></div></div>
+  <div class="card"><h2>Category Accuracy</h2><div id="rCatAcc"></div></div>
+  <div class="btn-row">
+    <button class="btn-primary" style="max-width:200px" onclick="restartSame()">↺ Replay</button>
+    <button class="btn-ghost" onclick="goHome()">⌂ Lobby</button>
+  </div>
+</div>
+
+</div><!-- shell -->
+<script>
+const DIAG={
+periscope:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="80" y="28" width="30" height="84" fill="none" stroke="#4a5568" stroke-width="2"/>
+<rect x="80" y="112" width="84" height="30" fill="none" stroke="#4a5568" stroke-width="2"/>
+<rect x="134" y="112" width="30" height="84" fill="none" stroke="#4a5568" stroke-width="2"/>
+<line x1="80" y1="112" x2="110" y2="142" stroke="#7ee8fa" stroke-width="3"/>
+<text x="20" y="125" fill="#7ee8fa" font-size="9" font-family="monospace">Mirror 1</text>
+<text x="22" y="135" fill="#7986cb" font-size="8" font-family="monospace">45° tilt</text>
+<line x1="134" y1="112" x2="164" y2="142" stroke="#7ee8fa" stroke-width="3"/>
+<text x="168" y="120" fill="#7ee8fa" font-size="9" font-family="monospace">Mirror 2</text>
+<text x="168" y="130" fill="#7986cb" font-size="8" font-family="monospace">45° tilt</text>
+<line x1="95" y1="14" x2="95" y2="112" stroke="#ffe57f" stroke-width="2.2" stroke-dasharray="5,3" class="ray-anim"/>
+<polygon points="95,14 89,28 101,28" fill="#ffe57f"/>
+<line x1="95" y1="115" x2="134" y2="115" stroke="#ffe57f" stroke-width="2.2" stroke-dasharray="5,3" class="ray-anim"/>
+<line x1="136" y1="115" x2="149" y2="185" stroke="#ffe57f" stroke-width="2.2" stroke-dasharray="5,3" class="ray-anim"/>
+<polygon points="149,185 143,172 155,172" fill="#ffe57f"/>
+<text x="30" y="15" fill="#b0bec5" font-size="10" font-family="monospace">Object (above)</text>
+<text x="120" y="208" fill="#b0bec5" font-size="10" font-family="monospace">Observer</text>
+<ellipse cx="149" cy="196" rx="9" ry="6" fill="none" stroke="#64ffda" stroke-width="1.5"/>
+<circle cx="149" cy="196" r="3.5" fill="#64ffda"/>
+<text x="210" y="60" fill="#e040fb" font-size="13" font-family="monospace" font-weight="bold">2 Plane Mirrors</text>
+<text x="210" y="76" fill="#7986cb" font-size="9" font-family="monospace">Each tilted 45° to normal</text>
+<text x="210" y="90" fill="#7986cb" font-size="9" font-family="monospace">Light bends twice → 180°</text>
+<text x="210" y="110" fill="#ffe57f" font-size="9" font-family="monospace">Used in: submarines,</text>
+<text x="210" y="122" fill="#ffe57f" font-size="9" font-family="monospace">bunkers, over crowds</text>
+</svg>`,
+
+reflection_law:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a5568"/><stop offset="50%" stop-color="#7ee8fa" stop-opacity=".5"/><stop offset="100%" stop-color="#4a5568"/></linearGradient></defs>
+<line x1="30" y1="160" x2="350" y2="160" stroke="#7986cb" stroke-width="3"/>
+<rect x="30" y="160" width="320" height="7" fill="url(#mg)" opacity=".6"/>
+<line x1="40" y1="167" x2="52" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="62" y1="167" x2="74" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="84" y1="167" x2="96" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="106" y1="167" x2="118" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="128" y1="167" x2="140" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="150" y1="167" x2="162" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="172" y1="167" x2="184" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="194" y1="167" x2="206" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="216" y1="167" x2="228" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="238" y1="167" x2="250" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="260" y1="167" x2="272" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="282" y1="167" x2="294" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="304" y1="167" x2="316" y2="180" stroke="#4a5568" stroke-width="1"/>
+<line x1="190" y1="35" x2="190" y2="162" stroke="#4a5568" stroke-width="1.5" stroke-dasharray="6,4"/>
+<text x="196" y="46" fill="#4a5568" font-size="10" font-family="monospace">Normal</text>
+<line x1="75" y1="48" x2="190" y2="160" stroke="#ffe57f" stroke-width="2.5" class="ray-anim"/>
+<polygon points="175,146 180,134 188,148" fill="#ffe57f"/>
+<text x="46" y="50" fill="#ffe57f" font-size="10" font-family="monospace">Incident ray</text>
+<line x1="190" y1="160" x2="305" y2="48" stroke="#7ee8fa" stroke-width="2.5" class="ray-anim"/>
+<polygon points="290,64 296,52 302,65" fill="#7ee8fa"/>
+<text x="275" y="44" fill="#7ee8fa" font-size="10" font-family="monospace">Reflected ray</text>
+<path d="M 190 128 A 32 32 0 0 0 164 112" fill="none" stroke="#ffe57f" stroke-width="1.5"/>
+<text x="144" y="128" fill="#ffe57f" font-size="10" font-family="monospace">θᵢ</text>
+<path d="M 190 128 A 32 32 0 0 1 216 112" fill="none" stroke="#7ee8fa" stroke-width="1.5"/>
+<text x="218" y="128" fill="#7ee8fa" font-size="10" font-family="monospace">θᵣ</text>
+<text x="70" y="205" fill="#00e676" font-size="11" font-family="monospace" font-weight="bold">Law of Reflection: θᵢ = θᵣ</text>
+</svg>`,
+
+magnet_field:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="130" y="88" width="120" height="44" rx="5" fill="#1a1a2e" stroke="#4a5568" stroke-width="2"/>
+<rect x="130" y="88" width="60" height="44" fill="rgba(224,64,251,.22)" stroke="#e040fb" stroke-width="1.5"/>
+<rect x="190" y="88" width="60" height="44" fill="rgba(255,82,82,.18)" stroke="#ff5252" stroke-width="1.5"/>
+<text x="152" y="115" fill="#e040fb" font-size="15" font-family="monospace" font-weight="bold">N</text>
+<text x="212" y="115" fill="#ff5252" font-size="15" font-family="monospace" font-weight="bold">S</text>
+<path d="M 162 88 Q 162 28 222 28 Q 252 28 242 88" fill="none" stroke="#e040fb" stroke-width="1.5" stroke-dasharray="4,2" opacity=".85"/>
+<polygon points="242,88 236,76 246,78" fill="#e040fb" opacity=".85"/>
+<path d="M 156 88 Q 118 12 222 12 Q 272 12 246 88" fill="none" stroke="#e040fb" stroke-width="1.1" stroke-dasharray="4,2" opacity=".5"/>
+<path d="M 162 132 Q 162 192 222 192 Q 252 192 242 132" fill="none" stroke="#e040fb" stroke-width="1.5" stroke-dasharray="4,2" opacity=".85"/>
+<polygon points="242,132 236,144 246,142" fill="#e040fb" opacity=".85"/>
+<path d="M 156 132 Q 118 208 222 208 Q 272 208 246 132" fill="none" stroke="#e040fb" stroke-width="1.1" stroke-dasharray="4,2" opacity=".5"/>
+<text x="10" y="52" fill="#7986cb" font-size="9" font-family="monospace">Lines EXIT</text>
+<text x="10" y="64" fill="#e040fb" font-size="9" font-family="monospace">North pole →</text>
+<text x="268" y="52" fill="#7986cb" font-size="9" font-family="monospace">re-enter</text>
+<text x="265" y="64" fill="#ff5252" font-size="9" font-family="monospace">South pole</text>
+<g transform="translate(72,110)"><line x1="-13" y1="0" x2="13" y2="0" stroke="#b0bec5" stroke-width="2"/><polygon points="13,0 5,-4 5,4" fill="#e040fb"/><polygon points="-13,0 -5,-4 -5,4" fill="#ff5252"/></g>
+<g transform="translate(308,110)"><line x1="-13" y1="0" x2="13" y2="0" stroke="#b0bec5" stroke-width="2"/><polygon points="13,0 5,-4 5,4" fill="#e040fb"/><polygon points="-13,0 -5,-4 -5,4" fill="#ff5252"/></g>
+<text x="85" y="185" fill="#7986cb" font-size="8" font-family="monospace">Compass needles align with field direction</text>
+</svg>`,
+
+right_hand_rule:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="175" y="18" width="30" height="184" rx="6" fill="#2d3748" stroke="#64ffda" stroke-width="1.5"/>
+<polygon points="190,26 183,46 197,46" fill="#64ffda"/>
+<text x="210" y="36" fill="#64ffda" font-size="10" font-family="monospace">I (current) ↑</text>
+<ellipse cx="190" cy="110" rx="58" ry="24" fill="none" stroke="#e040fb" stroke-width="1.6" stroke-dasharray="5,3" opacity=".75"/>
+<polygon points="190,86 197,94 183,94" fill="#e040fb" opacity=".75"/>
+<ellipse cx="190" cy="110" rx="88" ry="37" fill="none" stroke="#e040fb" stroke-width="1.2" stroke-dasharray="5,3" opacity=".45"/>
+<ellipse cx="190" cy="110" rx="118" ry="50" fill="none" stroke="#e040fb" stroke-width=".9" stroke-dasharray="5,3" opacity=".25"/>
+<path d="M 75 175 Q 70 130 82 118 Q 88 108 100 114 Q 104 98 116 104 Q 119 86 130 92 Q 132 74 146 82 L 150 118 Q 162 114 162 128 L 152 175 Z" fill="rgba(255,200,150,.1)" stroke="rgba(255,200,150,.38)" stroke-width="1.5"/>
+<text x="68" y="190" fill="#ffe57f" font-size="9" font-family="monospace">Thumb = current direction ↑</text>
+<text x="68" y="202" fill="#e040fb" font-size="9" font-family="monospace">Curled fingers = B field (circular)</text>
+<text x="262" y="100" fill="#e040fb" font-size="14" font-family="monospace" font-weight="bold">B</text>
+<text x="262" y="114" fill="#7986cb" font-size="9" font-family="monospace">field</text>
+</svg>`,
+
+sound_wave_diag:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="18" y="72" width="32" height="76" rx="4" fill="#2d3748" stroke="#00e676" stroke-width="1.5"/>
+<polygon points="50,78 72,62 72,158 50,140" fill="rgba(0,230,118,.12)" stroke="#00e676" stroke-width="1.5"/>
+<g class="ray-anim">
+<rect x="82" y="68" width="9" height="84" rx="2" fill="rgba(0,230,118,.72)"/>
+<rect x="104" y="83" width="6" height="54" rx="2" fill="rgba(0,230,118,.42)"/>
+<rect x="123" y="69" width="9" height="82" rx="2" fill="rgba(0,230,118,.72)"/>
+<rect x="145" y="83" width="6" height="54" rx="2" fill="rgba(0,230,118,.42)"/>
+<rect x="164" y="68" width="9" height="84" rx="2" fill="rgba(0,230,118,.72)"/>
+<rect x="186" y="83" width="6" height="54" rx="2" fill="rgba(0,230,118,.42)"/>
+<rect x="205" y="68" width="9" height="84" rx="2" fill="rgba(0,230,118,.72)"/>
+<rect x="227" y="83" width="6" height="54" rx="2" fill="rgba(0,230,118,.42)"/>
+<rect x="246" y="69" width="9" height="82" rx="2" fill="rgba(0,230,118,.72)"/>
+<rect x="268" y="83" width="6" height="54" rx="2" fill="rgba(0,230,118,.42)"/>
+<rect x="287" y="68" width="9" height="84" rx="2" fill="rgba(0,230,118,.72)"/>
+<rect x="309" y="83" width="6" height="54" rx="2" fill="rgba(0,230,118,.42)"/>
+<rect x="328" y="69" width="9" height="82" rx="2" fill="rgba(0,230,118,.72)"/>
+</g>
+<text x="86" y="60" fill="#00e676" font-size="8" font-family="monospace">C</text>
+<text x="107" y="60" fill="#7986cb" font-size="8" font-family="monospace">R</text>
+<text x="127" y="60" fill="#00e676" font-size="8" font-family="monospace">C</text>
+<text x="148" y="60" fill="#7986cb" font-size="8" font-family="monospace">R</text>
+<text x="168" y="60" fill="#00e676" font-size="8" font-family="monospace">C</text>
+<text x="190" y="60" fill="#7986cb" font-size="8" font-family="monospace">R</text>
+<text x="209" y="60" fill="#00e676" font-size="8" font-family="monospace">C</text>
+<path d="M 82 192 Q 105 170 128 192 Q 151 214 174 192 Q 197 170 220 192 Q 243 214 266 192 Q 289 170 312 192 Q 335 214 358 192" fill="none" stroke="#00e676" stroke-width="2" opacity=".55"/>
+<text x="82" y="215" fill="#7986cb" font-size="8" font-family="monospace">C = Compression (high pressure)    R = Rarefaction (low pressure)</text>
+<text x="200" y="28" fill="#00e676" font-size="10" font-family="monospace">Longitudinal wave →</text>
+</svg>`,
+
+ohms_law:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="55" y="48" width="265" height="124" rx="10" fill="none" stroke="#4a5568" stroke-width="2"/>
+<line x1="55" y1="88" x2="55" y2="78" stroke="#ffe57f" stroke-width="3"/>
+<line x1="48" y1="78" x2="62" y2="78" stroke="#ffe57f" stroke-width="4"/>
+<line x1="45" y1="70" x2="65" y2="70" stroke="#ffe57f" stroke-width="2"/>
+<text x="30" y="85" fill="#ffe57f" font-size="10" font-family="monospace">V</text>
+<rect x="138" y="42" width="104" height="19" rx="3" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.5"/>
+<text x="168" y="55" fill="#ffe57f" font-size="10" font-family="monospace">R (Ohms)</text>
+<circle cx="190" cy="178" r="14" fill="none" stroke="#64ffda" stroke-width="1.5"/>
+<text x="184" y="182" fill="#64ffda" font-size="10" font-family="monospace">A</text>
+<polygon points="148,48 156,41 156,55" fill="#64ffda" opacity=".7"/>
+<polygon points="75,48 67,41 67,55" fill="#64ffda" opacity=".7"/>
+<polygon points="290,110 282,103 282,117" fill="#64ffda" opacity=".5"/>
+<polygon points="55,110 47,103 47,117" fill="#64ffda" opacity=".5"/>
+<polygon points="290,48 298,160 282,160" fill="rgba(255,229,127,.07)" stroke="#ffe57f" stroke-width="1.5"/>
+<line x1="290" y1="48" x2="290" y2="160" stroke="#ffe57f" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="282" y="118" fill="#ffe57f" font-size="12" font-family="monospace" font-weight="bold">V</text>
+<text x="260" y="157" fill="#64ffda" font-size="12" font-family="monospace" font-weight="bold">I</text>
+<text x="302" y="157" fill="#ff6b35" font-size="12" font-family="monospace" font-weight="bold">R</text>
+<text x="240" y="178" fill="#7986cb" font-size="9" font-family="monospace">V = I × R</text>
+<text x="240" y="190" fill="#7986cb" font-size="9" font-family="monospace">I = V / R</text>
+</svg>`,
+
+series_parallel:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<text x="14" y="20" fill="#ffe57f" font-size="11" font-family="monospace" font-weight="bold">SERIES</text>
+<line x1="14" y1="55" x2="48" y2="55" stroke="#64ffda" stroke-width="2"/>
+<rect x="48" y="43" width="42" height="24" rx="3" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.5"/>
+<text x="60" y="59" fill="#ffe57f" font-size="10" font-family="monospace">R1</text>
+<line x1="90" y1="55" x2="112" y2="55" stroke="#64ffda" stroke-width="2"/>
+<rect x="112" y="43" width="42" height="24" rx="3" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.5"/>
+<text x="124" y="59" fill="#ffe57f" font-size="10" font-family="monospace">R2</text>
+<line x1="154" y1="55" x2="176" y2="55" stroke="#64ffda" stroke-width="2"/>
+<rect x="176" y="43" width="42" height="24" rx="3" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.5"/>
+<text x="188" y="59" fill="#ffe57f" font-size="10" font-family="monospace">R3</text>
+<line x1="218" y1="55" x2="250" y2="55" stroke="#64ffda" stroke-width="2"/>
+<polygon points="33,55 22,49 22,61" fill="#64ffda"/>
+<text x="14" y="88" fill="#7986cb" font-size="9" font-family="monospace">Rtotal = R1+R2+R3  |  Same current flows through all</text>
+<text x="14" y="120" fill="#ffe57f" font-size="11" font-family="monospace" font-weight="bold">PARALLEL</text>
+<line x1="14" y1="145" x2="52" y2="145" stroke="#64ffda" stroke-width="2"/>
+<line x1="52" y1="128" x2="52" y2="162" stroke="#64ffda" stroke-width="2"/>
+<line x1="52" y1="132" x2="80" y2="132" stroke="#64ffda" stroke-width="1.5"/>
+<rect x="80" y="123" width="34" height="18" rx="2" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.3"/>
+<text x="88" y="136" fill="#ffe57f" font-size="9" font-family="monospace">R1</text>
+<line x1="114" y1="132" x2="142" y2="132" stroke="#64ffda" stroke-width="1.5"/>
+<line x1="52" y1="155" x2="80" y2="155" stroke="#64ffda" stroke-width="1.5"/>
+<rect x="80" y="146" width="34" height="18" rx="2" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.3"/>
+<text x="88" y="159" fill="#ffe57f" font-size="9" font-family="monospace">R2</text>
+<line x1="114" y1="155" x2="142" y2="155" stroke="#64ffda" stroke-width="1.5"/>
+<line x1="142" y1="128" x2="142" y2="162" stroke="#64ffda" stroke-width="2"/>
+<line x1="142" y1="145" x2="172" y2="145" stroke="#64ffda" stroke-width="2"/>
+<polygon points="34,145 22,139 22,151" fill="#64ffda"/>
+<text x="14" y="192" fill="#7986cb" font-size="9" font-family="monospace">1/Rtotal = 1/R1 + 1/R2  |  Same voltage across each branch</text>
+</svg>`,
+
+convex_lens:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<path d="M 192 35 Q 224 110 192 185 Q 160 110 192 35 Z" fill="rgba(126,232,250,.09)" stroke="#7ee8fa" stroke-width="2"/>
+<line x1="15" y1="110" x2="365" y2="110" stroke="#4a5568" stroke-width="1" stroke-dasharray="6,3"/>
+<circle cx="128" cy="110" r="4.5" fill="#ffe57f"/>
+<text x="118" y="126" fill="#ffe57f" font-size="9" font-family="monospace">F</text>
+<circle cx="256" cy="110" r="4.5" fill="#ffe57f"/>
+<text x="246" y="126" fill="#ffe57f" font-size="9" font-family="monospace">F</text>
+<line x1="56" y1="110" x2="56" y2="52" stroke="#ff6b35" stroke-width="2"/>
+<polygon points="56,52 50,68 62,68" fill="#ff6b35"/>
+<text x="32" y="48" fill="#ff6b35" font-size="9" font-family="monospace">Object</text>
+<line x1="56" y1="54" x2="192" y2="54" stroke="#ffe57f" stroke-width="1.5" class="ray-anim"/>
+<line x1="192" y1="54" x2="268" y2="148" stroke="#ffe57f" stroke-width="1.5" class="ray-anim"/>
+<line x1="56" y1="54" x2="192" y2="110" stroke="#7ee8fa" stroke-width="1.5" stroke-dasharray="4,2" class="ray-anim"/>
+<line x1="192" y1="110" x2="268" y2="148" stroke="#7ee8fa" stroke-width="1.5" class="ray-anim"/>
+<line x1="268" y1="110" x2="268" y2="148" stroke="#e040fb" stroke-width="2"/>
+<polygon points="268,148 262,133 274,133" fill="#e040fb"/>
+<text x="272" y="156" fill="#e040fb" font-size="9" font-family="monospace">Image</text>
+<text x="272" y="168" fill="#7986cb" font-size="8" font-family="monospace">(real,inverted)</text>
+<text x="100" y="24" fill="#7ee8fa" font-size="10" font-family="monospace" font-weight="bold">CONVEX LENS — Converging</text>
+</svg>`,
+
+concave_lens:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<path d="M 182 35 Q 202 110 182 185 Q 162 110 182 35 Z" fill="rgba(128,222,234,.07)" stroke="#80deea" stroke-width="2"/>
+<path d="M 202 35 Q 182 110 202 185" fill="none" stroke="#80deea" stroke-width="2"/>
+<line x1="15" y1="110" x2="365" y2="110" stroke="#4a5568" stroke-width="1" stroke-dasharray="6,3"/>
+<circle cx="240" cy="110" r="4.5" fill="#ffe57f" opacity=".6"/>
+<text x="228" y="126" fill="#ffe57f" font-size="9" font-family="monospace">F (virtual)</text>
+<line x1="55" y1="110" x2="55" y2="52" stroke="#ff6b35" stroke-width="2"/>
+<polygon points="55,52 49,68 61,68" fill="#ff6b35"/>
+<text x="32" y="48" fill="#ff6b35" font-size="9" font-family="monospace">Object</text>
+<line x1="55" y1="54" x2="192" y2="54" stroke="#ffe57f" stroke-width="1.5" class="ray-anim"/>
+<line x1="192" y1="54" x2="340" y2="88" stroke="#ffe57f" stroke-width="1.5" class="ray-anim"/>
+<line x1="192" y1="54" x2="240" y2="110" stroke="#ffe57f" stroke-width="1" stroke-dasharray="4,2" opacity=".5"/>
+<line x1="55" y1="54" x2="192" y2="110" stroke="#7ee8fa" stroke-width="1.5" stroke-dasharray="4,2" class="ray-anim"/>
+<line x1="192" y1="110" x2="340" y2="122" stroke="#7ee8fa" stroke-width="1.5" class="ray-anim"/>
+<line x1="126" y1="110" x2="126" y2="78" stroke="#e040fb" stroke-width="1.5" stroke-dasharray="4,2"/>
+<polygon points="126,78 120,94 132,94" fill="#e040fb" opacity=".7"/>
+<text x="82" y="72" fill="#e040fb" font-size="9" font-family="monospace">Virtual image</text>
+<text x="82" y="84" fill="#7986cb" font-size="8" font-family="monospace">(upright, smaller)</text>
+<text x="95" y="24" fill="#80deea" font-size="10" font-family="monospace" font-weight="bold">CONCAVE LENS — Diverging</text>
+<text x="30" y="208" fill="#7986cb" font-size="9" font-family="monospace">Always: virtual · upright · diminished — regardless of object position</text>
+</svg>`,
+
+refraction_diag:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="0" y="110" width="380" height="110" fill="rgba(126,232,250,.05)"/>
+<line x1="0" y1="110" x2="380" y2="110" stroke="#7ee8fa" stroke-width="1.5" stroke-dasharray="8,4"/>
+<text x="10" y="102" fill="#b0bec5" font-size="10" font-family="monospace">Air (n = 1.0)</text>
+<text x="10" y="128" fill="#7ee8fa" font-size="10" font-family="monospace">Glass (n = 1.5)</text>
+<line x1="192" y1="18" x2="192" y2="202" stroke="#4a5568" stroke-width="1.5" stroke-dasharray="5,4"/>
+<line x1="76" y1="28" x2="192" y2="110" stroke="#ffe57f" stroke-width="2.5" class="ray-anim"/>
+<polygon points="178,98 182,84 190,98" fill="#ffe57f"/>
+<text x="48" y="32" fill="#ffe57f" font-size="10" font-family="monospace">Incident ray</text>
+<line x1="192" y1="110" x2="264" y2="202" stroke="#80deea" stroke-width="2.5" class="ray-anim"/>
+<polygon points="252,188 260,178 265,192" fill="#80deea"/>
+<text x="268" y="198" fill="#80deea" font-size="10" font-family="monospace">Refracted</text>
+<path d="M 192 72 A 38 38 0 0 0 163 58" fill="none" stroke="#ffe57f" stroke-width="1.5"/>
+<text x="143" y="68" fill="#ffe57f" font-size="9" font-family="monospace">θ₁</text>
+<path d="M 192 148 A 38 38 0 0 1 220 142" fill="none" stroke="#80deea" stroke-width="1.5"/>
+<text x="222" y="152" fill="#80deea" font-size="9" font-family="monospace">θ₂</text>
+<text x="18" y="205" fill="#e040fb" font-size="10" font-family="monospace" font-weight="bold">Snell's Law:  n₁·sin θ₁ = n₂·sin θ₂</text>
+</svg>`,
+
+heat_transfer:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<text x="10" y="20" fill="#ff6b35" font-size="10" font-family="monospace" font-weight="bold">CONDUCTION</text>
+<rect x="10" y="26" width="96" height="28" rx="4" fill="rgba(255,107,53,.25)" stroke="#ff6b35" stroke-width="1.5"/>
+<text x="28" y="45" fill="#ff6b35" font-size="9" font-family="monospace">HOT END</text>
+<rect x="106" y="26" width="96" height="28" rx="4" fill="rgba(255,107,53,.07)" stroke="#ff6b35" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="126" y="45" fill="#7986cb" font-size="9" font-family="monospace">COLD END</text>
+<polygon points="112,40 104,35 104,45" fill="#ff6b35"/>
+<text x="10" y="72" fill="#7986cb" font-size="8" font-family="monospace">Molecules vibrate → pass energy to neighbours</text>
+<text x="10" y="100" fill="#ffe57f" font-size="10" font-family="monospace" font-weight="bold">CONVECTION</text>
+<rect x="10" y="106" width="96" height="68" rx="6" fill="rgba(0,0,0,.3)" stroke="#4a5568" stroke-width="1.5"/>
+<path d="M 28 168 Q 22 148 38 130 Q 54 112 70 130 Q 86 148 80 168" fill="none" stroke="#ffe57f" stroke-width="1.5"/>
+<polygon points="28,168 21,157 32,155" fill="#ffe57f"/>
+<path d="M 48 178 Q 44 168 48 160 Q 53 168 56 160 Q 60 172 55 178 Z" fill="#ff6b35"/>
+<text x="10" y="190" fill="#7986cb" font-size="8" font-family="monospace">Hot fluid rises, cool sinks</text>
+<text x="205" y="20" fill="#e040fb" font-size="10" font-family="monospace" font-weight="bold">RADIATION</text>
+<circle cx="252" cy="78" r="24" fill="rgba(255,229,127,.18)" stroke="#ffe57f" stroke-width="2" class="pulse-anim"/>
+<circle cx="252" cy="78" r="14" fill="rgba(255,229,127,.5)"/>
+<line x1="252" y1="48" x2="252" y2="38" stroke="#ffe57f" stroke-width="1.5"/>
+<line x1="276" y1="54" x2="283" y2="47" stroke="#ffe57f" stroke-width="1.5"/>
+<line x1="282" y1="78" x2="292" y2="78" stroke="#ffe57f" stroke-width="1.5"/>
+<line x1="276" y1="102" x2="283" y2="109" stroke="#ffe57f" stroke-width="1.5"/>
+<line x1="228" y1="54" x2="221" y2="47" stroke="#ffe57f" stroke-width="1.5"/>
+<line x1="222" y1="78" x2="212" y2="78" stroke="#ffe57f" stroke-width="1.5"/>
+<circle cx="340" cy="78" r="16" fill="rgba(100,255,218,.12)" stroke="#64ffda" stroke-width="1.5"/>
+<path d="M 278 72 Q 287 67 296 72 Q 305 77 314 72 Q 323 67 332 72" fill="none" stroke="#e040fb" stroke-width="1.5" class="ray-anim"/>
+<path d="M 278 84 Q 287 79 296 84 Q 305 89 314 84 Q 323 79 332 84" fill="none" stroke="#e040fb" stroke-width="1.5" class="ray-anim"/>
+<text x="205" y="120" fill="#7986cb" font-size="8" font-family="monospace">No medium needed</text>
+<text x="205" y="132" fill="#7986cb" font-size="8" font-family="monospace">Infrared electromagnetic waves</text>
+<text x="205" y="152" fill="#ffe57f" font-size="9" font-family="monospace">Dark matt = best absorber/emitter</text>
+<text x="205" y="164" fill="#7986cb" font-size="9" font-family="monospace">Shiny silver = worst absorber</text>
+</svg>`,
+
+newtons_laws:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<text x="8" y="20" fill="#64ffda" font-size="10" font-family="monospace" font-weight="bold">1st Law — Inertia</text>
+<rect x="58" y="28" width="54" height="36" rx="4" fill="rgba(100,255,218,.1)" stroke="#64ffda" stroke-width="1.5"/>
+<text x="70" y="51" fill="#64ffda" font-size="9" font-family="monospace">BLOCK</text>
+<line x1="18" y1="64" x2="290" y2="64" stroke="#4a5568" stroke-width="2"/>
+<text x="120" y="82" fill="#7986cb" font-size="8" font-family="monospace">Stays at rest unless a net force acts</text>
+<text x="8" y="110" fill="#64ffda" font-size="10" font-family="monospace" font-weight="bold">2nd Law — F = ma</text>
+<rect x="58" y="118" width="54" height="36" rx="4" fill="rgba(100,255,218,.1)" stroke="#64ffda" stroke-width="1.5"/>
+<text x="70" y="141" fill="#64ffda" font-size="9" font-family="monospace">BLOCK</text>
+<polygon points="112,136 134,129 134,143" fill="#ff6b35"/>
+<line x1="112" y1="136" x2="155" y2="136" stroke="#ff6b35" stroke-width="2.5"/>
+<text x="158" y="133" fill="#ff6b35" font-size="9" font-family="monospace">F</text>
+<text x="10" y="172" fill="#7986cb" font-size="8" font-family="monospace">a = F/m : double F → double acceleration</text>
+<text x="200" y="110" fill="#64ffda" font-size="10" font-family="monospace" font-weight="bold">3rd Law</text>
+<text x="185" y="122" fill="#7986cb" font-size="8" font-family="monospace">Action = Reaction</text>
+<rect x="198" y="128" width="42" height="36" rx="4" fill="rgba(100,255,218,.1)" stroke="#64ffda" stroke-width="1.5"/>
+<rect x="248" y="128" width="42" height="36" rx="4" fill="rgba(255,107,53,.1)" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="240" y1="146" x2="248" y2="146" stroke="#4a5568" stroke-width="2"/>
+<polygon points="198,146 210,140 210,152" fill="#64ffda"/>
+<line x1="198" y1="146" x2="182" y2="146" stroke="#64ffda" stroke-width="2"/>
+<polygon points="290,146 278,140 278,152" fill="#ff6b35"/>
+<line x1="290" y1="146" x2="306" y2="146" stroke="#ff6b35" stroke-width="2"/>
+<text x="185" y="180" fill="#7986cb" font-size="8" font-family="monospace">Equal magnitude, opposite direction</text>
+</svg>`,
+
+free_fall:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="54" y="24" width="64" height="178" fill="rgba(45,55,72,.4)" stroke="#4a5568" stroke-width="1.5"/>
+<rect x="64" y="36" width="18" height="14" rx="2" fill="rgba(255,229,127,.12)" stroke="#4a5568" stroke-width="1"/>
+<rect x="90" y="36" width="18" height="14" rx="2" fill="rgba(255,229,127,.12)" stroke="#4a5568" stroke-width="1"/>
+<rect x="64" y="62" width="18" height="14" rx="2" fill="rgba(255,229,127,.12)" stroke="#4a5568" stroke-width="1"/>
+<rect x="90" y="62" width="18" height="14" rx="2" fill="rgba(255,229,127,.12)" stroke="#4a5568" stroke-width="1"/>
+<rect x="64" y="88" width="18" height="14" rx="2" fill="rgba(255,229,127,.12)" stroke="#4a5568" stroke-width="1"/>
+<rect x="90" y="88" width="18" height="14" rx="2" fill="rgba(255,229,127,.12)" stroke="#4a5568" stroke-width="1"/>
+<circle cx="165" cy="44" r="12" fill="rgba(100,255,218,.35)" stroke="#64ffda" stroke-width="2"/>
+<text x="182" y="48" fill="#64ffda" font-size="9" font-family="monospace">t=0s  v = 0 m/s</text>
+<circle cx="165" cy="90" r="12" fill="rgba(100,255,218,.5)" stroke="#64ffda" stroke-width="2"/>
+<text x="182" y="94" fill="#64ffda" font-size="9" font-family="monospace">t=1s  v = 10 m/s</text>
+<polygon points="165,72 159,80 171,80" fill="#ff6b35"/>
+<circle cx="165" cy="148" r="12" fill="rgba(100,255,218,.7)" stroke="#64ffda" stroke-width="2"/>
+<text x="182" y="152" fill="#64ffda" font-size="9" font-family="monospace">t=2s  v = 20 m/s</text>
+<polygon points="165,122 159,134 171,134" fill="#ff6b35"/>
+<circle cx="165" cy="196" r="12" fill="rgba(100,255,218,.9)" stroke="#64ffda" stroke-width="2"/>
+<text x="182" y="200" fill="#64ffda" font-size="9" font-family="monospace">t=3s  v = 30 m/s</text>
+<polygon points="165,172 159,186 171,186" fill="#ff6b35"/>
+<text x="18" y="215" fill="#ffe57f" font-size="10" font-family="monospace" font-weight="bold">v = u + gt    g = 10 m/s²</text>
+</svg>`,
+
+color_spectrum:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<polygon points="158,38 58,182 258,182" fill="rgba(126,232,250,.06)" stroke="#7ee8fa" stroke-width="2"/>
+<line x1="18" y1="110" x2="138" y2="110" stroke="white" stroke-width="5" opacity=".8"/>
+<text x="8" y="100" fill="white" font-size="9" font-family="monospace">White</text>
+<text x="8" y="112" fill="white" font-size="9" font-family="monospace">light</text>
+<line x1="174" y1="108" x2="332" y2="52" stroke="#ff0000" stroke-width="2.5" opacity=".9"/>
+<line x1="174" y1="110" x2="332" y2="72" stroke="#ff8800" stroke-width="2.5" opacity=".9"/>
+<line x1="174" y1="113" x2="332" y2="92" stroke="#ffee00" stroke-width="2.5" opacity=".9"/>
+<line x1="174" y1="116" x2="332" y2="112" stroke="#00cc00" stroke-width="2.5" opacity=".9"/>
+<line x1="174" y1="120" x2="332" y2="132" stroke="#0066ff" stroke-width="2.5" opacity=".9"/>
+<line x1="174" y1="124" x2="332" y2="152" stroke="#3300cc" stroke-width="2.5" opacity=".9"/>
+<line x1="174" y1="128" x2="332" y2="172" stroke="#8800ee" stroke-width="2.5" opacity=".9"/>
+<text x="336" y="56" fill="#ff4444" font-size="9" font-family="monospace">Red ~700nm</text>
+<text x="336" y="76" fill="#ffaa22" font-size="9" font-family="monospace">Orange</text>
+<text x="336" y="96" fill="#ffee22" font-size="9" font-family="monospace">Yellow</text>
+<text x="336" y="116" fill="#22ee22" font-size="9" font-family="monospace">Green</text>
+<text x="336" y="136" fill="#4488ff" font-size="9" font-family="monospace">Blue</text>
+<text x="336" y="156" fill="#6633cc" font-size="9" font-family="monospace">Indigo</text>
+<text x="336" y="176" fill="#aa44ff" font-size="9" font-family="monospace">Violet ~400nm</text>
+<text x="46" y="205" fill="#7986cb" font-size="9" font-family="monospace">ROYGBIV — Isaac Newton (1672) — Prism dispersion</text>
+</svg>`,
+
+echo_diag:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<rect x="312" y="18" width="52" height="184" rx="4" fill="rgba(74,85,104,.4)" stroke="#4a5568" stroke-width="2"/>
+<circle cx="44" cy="94" r="13" fill="none" stroke="#00e676" stroke-width="2"/>
+<line x1="44" y1="107" x2="44" y2="148" stroke="#00e676" stroke-width="2"/>
+<line x1="44" y1="116" x2="26" y2="132" stroke="#00e676" stroke-width="2"/>
+<line x1="44" y1="116" x2="62" y2="132" stroke="#00e676" stroke-width="2"/>
+<line x1="44" y1="148" x2="30" y2="172" stroke="#00e676" stroke-width="2"/>
+<line x1="44" y1="148" x2="58" y2="172" stroke="#00e676" stroke-width="2"/>
+<path d="M 66 106 Q 140 96 214 106 Q 262 112 312 106" fill="none" stroke="#00e676" stroke-width="2" stroke-dasharray="8,4" class="ray-anim"/>
+<polygon points="308,106 296,100 296,112" fill="#00e676"/>
+<text x="148" y="94" fill="#00e676" font-size="9" font-family="monospace">Sound →</text>
+<path d="M 312 122 Q 262 134 214 122 Q 140 112 66 122" fill="none" stroke="#ffe57f" stroke-width="2" stroke-dasharray="8,4"/>
+<polygon points="70,122 82,116 82,128" fill="#ffe57f"/>
+<text x="128" y="142" fill="#ffe57f" font-size="9" font-family="monospace">← Echo returns</text>
+<line x1="44" y1="175" x2="312" y2="175" stroke="#4a5568" stroke-width="1" stroke-dasharray="4,3"/>
+<polygon points="44,175 56,169 56,181" fill="#4a5568"/>
+<polygon points="312,175 300,169 300,181" fill="#4a5568"/>
+<text x="142" y="192" fill="#7986cb" font-size="9" font-family="monospace">d ≥ 17 m for distinct echo</text>
+<text x="28" y="212" fill="#ffe57f" font-size="10" font-family="monospace" font-weight="bold">d = (v × t) / 2    v(air) = 343 m/s</text>
+</svg>`,
+
+refractive_index:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<text x="18" y="24" fill="#80deea" font-size="12" font-family="monospace" font-weight="bold">Refractive Index (n) Table</text>
+<rect x="18" y="32" width="344" height="20" rx="3" fill="rgba(128,222,234,.12)"/>
+<text x="28" y="46" fill="#80deea" font-size="9" font-family="monospace">Material</text>
+<text x="180" y="46" fill="#80deea" font-size="9" font-family="monospace">n</text>
+<text x="230" y="46" fill="#80deea" font-size="9" font-family="monospace">Speed of light</text>
+<text x="28" y="70" fill="#b0bec5" font-size="9" font-family="monospace">Vacuum</text><text x="180" y="70" fill="#ffe57f" font-size="9" font-family="monospace">1.000</text><text x="230" y="70" fill="#64ffda" font-size="9" font-family="monospace">3.00 × 10⁸ m/s</text>
+<line x1="18" y1="75" x2="362" y2="75" stroke="#4a5568" stroke-width=".5"/>
+<text x="28" y="90" fill="#b0bec5" font-size="9" font-family="monospace">Air</text><text x="180" y="90" fill="#ffe57f" font-size="9" font-family="monospace">1.003</text><text x="230" y="90" fill="#64ffda" font-size="9" font-family="monospace">≈ 3.00 × 10⁸ m/s</text>
+<line x1="18" y1="95" x2="362" y2="95" stroke="#4a5568" stroke-width=".5"/>
+<text x="28" y="110" fill="#b0bec5" font-size="9" font-family="monospace">Water</text><text x="180" y="110" fill="#ffe57f" font-size="9" font-family="monospace">1.33</text><text x="230" y="110" fill="#64ffda" font-size="9" font-family="monospace">2.26 × 10⁸ m/s</text>
+<line x1="18" y1="115" x2="362" y2="115" stroke="#4a5568" stroke-width=".5"/>
+<text x="28" y="130" fill="#b0bec5" font-size="9" font-family="monospace">Crown Glass</text><text x="180" y="130" fill="#ffe57f" font-size="9" font-family="monospace">1.52</text><text x="230" y="130" fill="#64ffda" font-size="9" font-family="monospace">1.97 × 10⁸ m/s</text>
+<line x1="18" y1="135" x2="362" y2="135" stroke="#4a5568" stroke-width=".5"/>
+<text x="28" y="150" fill="#b0bec5" font-size="9" font-family="monospace">Diamond</text><text x="180" y="150" fill="#ffe57f" font-size="9" font-family="monospace">2.42</text><text x="230" y="150" fill="#64ffda" font-size="9" font-family="monospace">1.24 × 10⁸ m/s</text>
+<rect x="18" y="164" width="344" height="42" rx="8" fill="rgba(128,222,234,.06)" stroke="rgba(128,222,234,.2)" stroke-width="1"/>
+<text x="40" y="181" fill="#80deea" font-size="11" font-family="monospace" font-weight="bold">n = c / v</text>
+<text x="115" y="181" fill="#7986cb" font-size="10" font-family="monospace">Higher n → slower light → more bending</text>
+<text x="40" y="198" fill="#7986cb" font-size="9" font-family="monospace">Diamond sparkles because n=2.42 causes total internal reflection</text>
+</svg>`,
+
+parallel_resistance:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<line x1="36" y1="110" x2="98" y2="110" stroke="#64ffda" stroke-width="2.5"/>
+<line x1="276" y1="110" x2="344" y2="110" stroke="#64ffda" stroke-width="2.5"/>
+<line x1="98" y1="110" x2="98" y2="68" stroke="#64ffda" stroke-width="2"/>
+<line x1="98" y1="110" x2="98" y2="152" stroke="#64ffda" stroke-width="2"/>
+<line x1="98" y1="68" x2="144" y2="68" stroke="#64ffda" stroke-width="2"/>
+<rect x="144" y="56" width="88" height="24" rx="4" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.8"/>
+<text x="174" y="72" fill="#ffe57f" font-size="12" font-family="monospace" font-weight="bold">6 Ω</text>
+<line x1="232" y1="68" x2="276" y2="68" stroke="#64ffda" stroke-width="2"/>
+<line x1="98" y1="152" x2="144" y2="152" stroke="#64ffda" stroke-width="2"/>
+<rect x="144" y="140" width="88" height="24" rx="4" fill="rgba(255,229,127,.12)" stroke="#ffe57f" stroke-width="1.8"/>
+<text x="174" y="156" fill="#ffe57f" font-size="12" font-family="monospace" font-weight="bold">6 Ω</text>
+<line x1="232" y1="152" x2="276" y2="152" stroke="#64ffda" stroke-width="2"/>
+<line x1="276" y1="68" x2="276" y2="152" stroke="#64ffda" stroke-width="2"/>
+<line x1="36" y1="68" x2="36" y2="152" stroke="#64ffda" stroke-width="2"/>
+<line x1="26" y1="92" x2="46" y2="92" stroke="#ffe57f" stroke-width="4"/>
+<line x1="23" y1="104" x2="49" y2="104" stroke="#ffe57f" stroke-width="2.5"/>
+<text x="8" y="90" fill="#ffe57f" font-size="9" font-family="monospace">V</text>
+<polygon points="72,110 60,104 60,116" fill="#64ffda"/>
+<polygon points="158,68 148,62 148,74" fill="#64ffda" opacity=".7"/>
+<polygon points="158,152 148,146 148,158" fill="#64ffda" opacity=".7"/>
+<text x="52" y="196" fill="#e040fb" font-size="11" font-family="monospace" font-weight="bold">1/R = 1/6 + 1/6 = 2/6   →   R = 3 Ω</text>
+</svg>`,
+
+specular_diffuse:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<text x="18" y="20" fill="#7ee8fa" font-size="10" font-family="monospace" font-weight="bold">SPECULAR (Smooth)</text>
+<line x1="18" y1="118" x2="172" y2="118" stroke="#7986cb" stroke-width="3"/>
+<rect x="18" y="118" width="154" height="7" fill="rgba(126,232,250,.2)"/>
+<line x1="48" y1="68" x2="78" y2="118" stroke="#ffe57f" stroke-width="1.8" class="ray-anim"/>
+<line x1="88" y1="62" x2="108" y2="118" stroke="#ffe57f" stroke-width="1.8" class="ray-anim"/>
+<line x1="128" y1="68" x2="138" y2="118" stroke="#ffe57f" stroke-width="1.8" class="ray-anim"/>
+<line x1="78" y1="118" x2="48" y2="168" stroke="#7ee8fa" stroke-width="1.8" class="ray-anim"/>
+<line x1="108" y1="118" x2="88" y2="168" stroke="#7ee8fa" stroke-width="1.8" class="ray-anim"/>
+<line x1="138" y1="118" x2="128" y2="168" stroke="#7ee8fa" stroke-width="1.8" class="ray-anim"/>
+<text x="18" y="195" fill="#7986cb" font-size="9" font-family="monospace">Smooth → parallel rays → clear image</text>
+<text x="200" y="20" fill="#ff6b35" font-size="10" font-family="monospace" font-weight="bold">DIFFUSE (Rough)</text>
+<path d="M 200 118 Q 216 110 232 118 Q 248 126 264 118 Q 280 110 296 118 Q 312 126 328 118 Q 344 110 360 118" fill="none" stroke="#7986cb" stroke-width="3"/>
+<line x1="228" y1="68" x2="244" y2="114" stroke="#ffe57f" stroke-width="1.8"/>
+<line x1="264" y1="62" x2="272" y2="114" stroke="#ffe57f" stroke-width="1.8"/>
+<line x1="300" y1="68" x2="296" y2="114" stroke="#ffe57f" stroke-width="1.8"/>
+<line x1="244" y1="114" x2="214" y2="158" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="244" y1="114" x2="258" y2="168" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="244" y1="114" x2="290" y2="152" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="272" y1="114" x2="238" y2="168" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="272" y1="114" x2="312" y2="162" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="296" y1="114" x2="262" y2="172" stroke="#ff6b35" stroke-width="1.5"/>
+<line x1="296" y1="114" x2="326" y2="168" stroke="#ff6b35" stroke-width="1.5"/>
+<text x="200" y="195" fill="#7986cb" font-size="9" font-family="monospace">Rough → scattered rays → no clear image</text>
+</svg>`,
+
+measurement_tools:`<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"><rect width="380" height="220" fill="#07090f"/>
+<text x="8" y="20" fill="#b39ddb" font-size="10" font-family="monospace" font-weight="bold">Ruler — 1mm precision</text>
+<rect x="8" y="26" width="210" height="28" rx="3" fill="rgba(179,157,219,.1)" stroke="#b39ddb" stroke-width="1.5"/>
+<line x1="18" y1="54" x2="18" y2="46" stroke="#b39ddb" stroke-width="1.5"/>
+<line x1="29" y1="54" x2="29" y2="50" stroke="#b39ddb" stroke-width="1"/>
+<line x1="40" y1="54" x2="40" y2="46" stroke="#b39ddb" stroke-width="1.5"/>
+<line x1="51" y1="54" x2="51" y2="50" stroke="#b39ddb" stroke-width="1"/>
+<line x1="62" y1="54" x2="62" y2="46" stroke="#b39ddb" stroke-width="1.5"/>
+<line x1="73" y1="54" x2="73" y2="50" stroke="#b39ddb" stroke-width="1"/>
+<line x1="84" y1="54" x2="84" y2="46" stroke="#b39ddb" stroke-width="1.5"/>
+<text x="15" y="43" fill="#b39ddb" font-size="7" font-family="monospace">1</text><text x="37" y="43" fill="#b39ddb" font-size="7" font-family="monospace">2</text><text x="59" y="43" fill="#b39ddb" font-size="7" font-family="monospace">3</text><text x="81" y="43" fill="#b39ddb" font-size="7" font-family="monospace">4</text>
+<text x="8" y="80" fill="#b39ddb" font-size="10" font-family="monospace" font-weight="bold">Vernier Caliper — 0.1mm</text>
+<rect x="8" y="88" width="170" height="20" rx="2" fill="rgba(179,157,219,.08)" stroke="#b39ddb" stroke-width="1.5"/>
+<rect x="58" y="85" width="74" height="26" rx="2" fill="rgba(179,157,219,.2)" stroke="#b39ddb" stroke-width="1"/>
+<line x1="28" y1="108" x2="28" y2="100" stroke="#b39ddb" stroke-width="1.5"/>
+<text x="8" y="130" fill="#b39ddb" font-size="10" font-family="monospace" font-weight="bold">Micrometer — 0.01mm</text>
+<rect x="8" y="140" width="84" height="16" rx="3" fill="rgba(179,157,219,.08)" stroke="#b39ddb" stroke-width="1.5"/>
+<circle cx="118" cy="148" r="24" fill="rgba(179,157,219,.1)" stroke="#b39ddb" stroke-width="1.5"/>
+<rect x="92" y="142" width="28" height="12" rx="1" fill="rgba(179,157,219,.2)" stroke="#b39ddb" stroke-width="1"/>
+<text x="8" y="178" fill="#7986cb" font-size="8" font-family="monospace">Micrometer: most precise of the three</text>
+<text x="210" y="46" fill="#b39ddb" font-size="9" font-family="monospace">Accuracy comparison</text>
+<rect x="210" y="54" width="22" height="14" rx="2" fill="rgba(179,157,219,.28)"/>
+<text x="236" y="65" fill="#b0bec5" font-size="8" font-family="monospace">Ruler 1mm</text>
+<rect x="210" y="74" width="64" height="14" rx="2" fill="rgba(179,157,219,.5)"/>
+<text x="278" y="85" fill="#b0bec5" font-size="8" font-family="monospace">Vernier 0.1mm</text>
+<rect x="210" y="94" width="128" height="14" rx="2" fill="rgba(179,157,219,.8)"/>
+<text x="342" y="105" fill="#b0bec5" font-size="8" font-family="monospace">Micro 0.01mm</text>
+</svg>`,
+};
+const CATS=[
+  {id:'light',  name:'Optics & Light',        icon:'💡',a:'#7ee8fa',b:'#5c6bc0'},
+  {id:'magnet', name:'Magnetism & EM',         icon:'🧲',a:'#e040fb',b:'#7b1fa2'},
+  {id:'sound',  name:'Sound & Waves',          icon:'🔊',a:'#00e676',b:'#00695c'},
+  {id:'heat',   name:'Thermal Physics',        icon:'🔥',a:'#ff6b35',b:'#b71c1c'},
+  {id:'motion', name:'Mechanics & Motion',     icon:'⚡',a:'#64ffda',b:'#00796b'},
+  {id:'elec',   name:'Circuits & Electricity', icon:'⚙️',a:'#ffe57f',b:'#f57f17'},
+  {id:'measure',name:'Measurements',           icon:'📐',a:'#b39ddb',b:'#4527a0'},
+  {id:'lens',   name:'Lenses & Refraction',    icon:'🔍',a:'#80deea',b:'#006064'},
+];
+const QS=[
+{c:'light',d:'easy',img:'periscope',
+ q:"A periscope uses how many plane mirrors, and at what angle are they positioned?",
+ o:["1 mirror at 90°","2 mirrors at 45°","3 mirrors at 60°","4 mirrors at 30°"],a:1,
+ ex:"A periscope uses exactly 2 plane mirrors, each tilted at 45° to the normal. Light enters at the top, reflects off Mirror 1 horizontally, then reflects off Mirror 2 downward to the observer — rotating the light path by 180°."},
+{c:'light',d:'easy',img:'reflection_law',
+ q:"When light reflects off a mirror, the angle of incidence and angle of reflection are both measured from the:",
+ o:["Mirror surface","Edge of the ray","Normal to the surface","Horizontal plane"],a:2,
+ ex:"Both angles are always measured from the 'normal' — an imaginary perpendicular line to the mirror surface at the point of incidence. This ensures θᵢ = θᵣ regardless of the mirror's orientation."},
+{c:'light',d:'medium',img:'reflection_law',
+ q:"An object is placed 20 cm in front of a plane mirror. What is the total distance between the object and its image?",
+ o:["20 cm","30 cm","40 cm","10 cm"],a:2,
+ ex:"In a plane mirror the image forms as far behind the mirror as the object is in front. Object = 20 cm front; image = 20 cm behind mirror. Total distance = 20 + 20 = 40 cm."},
+{c:'light',d:'medium',img:'color_spectrum',
+ q:"The diagram shows white light dispersed by a prism. Which colour bends (refracts) the MOST?",
+ o:["Red (~700 nm)","Green (~550 nm)","Violet (~400 nm)","Yellow (~580 nm)"],a:2,
+ ex:"Violet has the shortest wavelength and highest frequency, so it slows more in glass and bends the most (highest refractive index). Red has the longest wavelength and bends least — that's why red appears at top of rainbow and violet at bottom."},
+{c:'light',d:'easy',img:'color_spectrum',
+ q:"From the spectrum diagram, who first proved white light contains all 7 colours?",
+ o:["Einstein","Galileo","Isaac Newton","James Clerk Maxwell"],a:2,
+ ex:"Isaac Newton (1672) used a glass prism to split white light into ROYGBIV. He then used a second prism to recombine the spectrum back into white light — proving the colours were IN the light, not added by the prism."},
+{c:'light',d:'hard',img:'reflection_law',
+ q:"A plane mirror is rotated through 15°. Through how many degrees does the reflected ray rotate?",
+ o:["15°","30°","7.5°","45°"],a:1,
+ ex:"When a mirror rotates by angle θ, the reflected ray rotates by 2θ. Both the angle of incidence AND the angle of reflection change simultaneously. So 15° mirror rotation → 30° rotation of reflected ray. Used in galvanometers and optical levers."},
+{c:'light',d:'medium',img:'reflection_law',
+ q:"In regular (specular) reflection from a smooth mirror surface, the reflected rays are:",
+ o:["Scattered in all directions","Parallel to each other and follow θᵢ=θᵣ","Absorbed by the surface","Refracted through the mirror"],a:1,
+ ex:"Specular (regular) reflection occurs on smooth surfaces: all parallel incoming rays reflect at equal angles and leave as parallel rays, forming a clear image. Rough surfaces cause diffuse reflection where rays scatter in all directions."},
+{c:'light',d:'hard',img:'color_spectrum',
+ q:"In additive colour mixing (mixing coloured light beams), Red + Green produces:",
+ o:["White","Cyan","Yellow","Magenta"],a:2,
+ ex:"Additive mixing with light: R+G=Yellow, R+B=Magenta, G+B=Cyan, R+G+B=White. This is how TV screens work using RGB pixels. Subtractive mixing (paints/dyes) is completely different: mixing all pigments gives black."},
+
+{c:'magnet',d:'easy',img:'magnet_field',
+ q:"From the diagram, magnetic field lines exit from the ___ pole outside the magnet.",
+ o:["South","North","Both poles","The centre"],a:1,
+ ex:"By convention, external magnetic field lines leave the North pole, curve through space, and re-enter at the South pole. Inside the magnet, field lines run from South to North. Compass needles align with these field lines."},
+{c:'magnet',d:'medium',img:'right_hand_rule',
+ q:"The Right-Hand Thumb Rule for a current-carrying wire: the thumb points in the direction of:",
+ o:["The magnetic field B","Electric potential","Conventional current I","Force on the wire"],a:2,
+ ex:"Right-Hand Thumb Rule: point the right thumb in the direction of conventional current (positive to negative). The curled fingers show the direction of circular magnetic field lines around the wire."},
+{c:'magnet',d:'easy',img:'magnet_field',
+ q:"Two bar magnets have their North poles facing each other. What force acts between them?",
+ o:["Attractive — they pull together","Repulsive — they push apart","No force","They spin around each other"],a:1,
+ ex:"Like poles repel, unlike poles attract. Two North poles produce repulsion. The field lines from both North poles point outward and push against each other. Two South poles would also repel; N facing S would attract."},
+{c:'magnet',d:'medium',img:'right_hand_rule',
+ q:"Fleming's Left-Hand Rule (FBI rule) is used specifically to find the force on:",
+ o:["A permanent magnet in a field","A current-carrying conductor in a magnetic field","A stationary electric charge","A moving charge in vacuum"],a:1,
+ ex:"Fleming's LH Rule: First finger = Field (B direction), seCond finger = Current (I direction), thuMb = Motion/force direction. Remember: FBI. It applies to electric motors where current-carrying conductors experience force in a magnetic field."},
+{c:'magnet',d:'hard',img:'magnet_field',
+ q:"An electromagnet differs from a permanent magnet because the electromagnet:",
+ o:["Cannot attract iron filings","Has no magnetic poles","Loses its magnetism when current stops","Is always weaker"],a:2,
+ ex:"An electromagnet requires electric current to maintain its magnetic field — it is a temporary magnet. Cut the current and the field collapses. This controllability makes it valuable: you can switch it on/off and vary strength by changing current (e.g. cranes, MRI)."},
+{c:'magnet',d:'hard',img:'magnet_field',
+ q:"Earth's geographic North Pole corresponds to a magnetic ___ pole.",
+ o:["North magnetic pole","South magnetic pole","East magnetic pole","Neutral pole"],a:1,
+ ex:"Earth's geographic North is actually near the magnetic South Pole. A compass needle's north-seeking end (magnetic north) is attracted to Earth's geographic north because opposite poles attract. Earth's magnetic poles slowly migrate over decades."},
+
+{c:'sound',d:'easy',img:'sound_wave_diag',
+ q:"The diagram shows compressions (C) and rarefactions (R). Sound waves are classified as:",
+ o:["Transverse electromagnetic waves","Longitudinal mechanical waves","Transverse mechanical waves","Electromagnetic pressure waves"],a:1,
+ ex:"Sound is a longitudinal wave: particles vibrate parallel (back-and-forth) to the direction of wave travel. Compressions are high-pressure regions; rarefactions are low-pressure. Sound needs a material medium — it cannot travel through vacuum."},
+{c:'sound',d:'medium',img:'echo_diag',
+ q:"From the echo diagram, for a distinct echo to be heard, the cliff must be at least:",
+ o:["5 m away","10 m away","17 m away","50 m away"],a:2,
+ ex:"The human ear cannot separate two sounds less than 0.1 s apart. d = ½ × v × t = ½ × 343 × 0.1 ≈ 17 m. The factor ½ accounts for the round trip. Closer than 17 m and the echo blends with the original — perceived as reverberation."},
+{c:'sound',d:'easy',img:'sound_wave_diag',
+ q:"Sound travels fastest through which medium?",
+ o:["Air (gas)","Water (liquid)","Steel (solid)","Vacuum"],a:2,
+ ex:"Sound speed depends on elasticity and density. Steel ≈ 5000 m/s; Water ≈ 1480 m/s; Air ≈ 343 m/s; Vacuum = 0 m/s. Solids transmit fastest because molecules are closest together — energy transfers more quickly between neighbours."},
+{c:'sound',d:'hard',img:'echo_diag',
+ q:"An echo returns in 0.4 s. How far is the reflecting wall? (v = 340 m/s)",
+ o:["34 m","68 m","136 m","17 m"],a:1,
+ ex:"d = (v × t) / 2 = (340 × 0.4) / 2 = 136 / 2 = 68 m. Divide by 2 because sound travels to the wall AND back — total path is twice the distance to the wall."},
+{c:'sound',d:'medium',img:'sound_wave_diag',
+ q:"The pitch (how high or low a sound seems) is determined by its:",
+ o:["Amplitude","Frequency","Speed","Wavelength only"],a:1,
+ ex:"Pitch corresponds to frequency. Higher frequency = higher pitch (soprano). Lower frequency = lower pitch (bass). Loudness is determined by amplitude. Speed depends on the medium, not the source."},
+
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"From the diagram, which heat transfer method works across a vacuum (no material needed)?",
+ o:["Conduction","Convection","Radiation","Evaporation"],a:2,
+ ex:"Radiation transfers heat via infrared electromagnetic waves that travel through vacuum. This is how the Sun heats Earth across ~150 million km of near-vacuum space. Conduction and convection both require matter to transmit heat."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"In the convection diagram, why does heated fluid rise upward?",
+ o:["It becomes more dense","It becomes less dense","Its viscosity decreases","It radiates heat"],a:1,
+ ex:"Heating a fluid causes molecules to move faster and spread apart — the fluid expands and becomes less dense. Less-dense fluid rises and denser cool fluid sinks to replace it, creating convection currents that distribute heat throughout."},
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"In conduction, heat energy is transferred through a solid by:",
+ o:["Electrons moving backward","Vibrating molecules passing energy to neighbours","Bulk movement of fluid","Infrared radiation within the solid"],a:1,
+ ex:"In solid conduction, thermal energy causes atoms at the hot end to vibrate more intensely. They collide with adjacent atoms, transferring kinetic energy progressively through the material — without any bulk movement of matter."},
+{c:'heat',d:'hard',img:'heat_transfer',
+ q:"A dark matt black surface compared to a shiny silver surface will:",
+ o:["Absorb less and emit less radiation","Absorb more and emit more radiation","Reflect more radiation","Only absorb but never emit"],a:1,
+ ex:"Dark matt (black) surfaces are the best absorbers AND emitters of thermal radiation. Shiny silvered surfaces are worst absorbers (best reflectors) AND worst emitters. This is why thermos flasks are silvered inside to minimize radiation heat loss."},
+
+{c:'motion',d:'easy',img:'newtons_laws',
+ q:"The 1st Law diagram shows inertia. Which correctly defines inertia?",
+ o:["The force that causes acceleration","An object's resistance to changes in its state of motion","The rate of change of velocity","Momentum divided by time"],a:1,
+ ex:"Inertia is the property of matter that resists changes in motion state. A stationary object resists being set in motion; a moving object resists being stopped or changing direction. Mass is the measure of inertia — heavier objects are harder to start/stop."},
+{c:'motion',d:'medium',img:'free_fall',
+ q:"The diagram shows free fall. After 3 seconds (g = 10 m/s², starting from rest), the ball's speed is:",
+ o:["10 m/s","20 m/s","30 m/s","45 m/s"],a:2,
+ ex:"v = u + gt = 0 + 10×3 = 30 m/s. In free fall, velocity increases by 10 m/s every second (g = 10 m/s²). The ball covers increasing distances each second — a hallmark of uniform acceleration."},
+{c:'motion',d:'medium',img:'newtons_laws',
+ q:"Newton's 2nd Law: if you double the force on an object while keeping mass constant:",
+ o:["Acceleration halves","Acceleration stays the same","Acceleration doubles","Velocity doubles instantly"],a:2,
+ ex:"a = F/m. Double F with same m → double acceleration. This is why a stronger push produces a faster acceleration. F = ma tells us force, mass, and acceleration are precisely proportional."},
+{c:'motion',d:'hard',img:'free_fall',
+ q:"A ball is thrown horizontally from a cliff at 20 m/s. How far has it fallen vertically after 2 s? (g = 10 m/s²)",
+ o:["10 m","20 m","40 m","80 m"],a:1,
+ ex:"Vertical and horizontal motions are independent (projectile motion). Vertical: s = ut + ½gt² = 0 + ½×10×4 = 20 m. The horizontal velocity (20 m/s) does not affect vertical free-fall."},
+{c:'motion',d:'easy',img:'newtons_laws',
+ q:"Newton's 3rd Law (diagram): when A pushes B with 50 N to the right, B pushes A with:",
+ o:["25 N to the right","50 N to the left","50 N to the right","100 N to the left"],a:1,
+ ex:"3rd Law: every action has an equal and opposite reaction. Forces always exist in pairs, act on different objects, have equal magnitudes and opposite directions. B pushes back on A with exactly 50 N but in the opposite direction."},
+{c:'motion',d:'medium',img:'newtons_laws',
+ q:"A 5 kg object accelerates at 6 m/s². The net force acting on it is:",
+ o:["1.2 N","11 N","30 N","0.83 N"],a:2,
+ ex:"F = ma = 5 × 6 = 30 N. This is the NET force — the vector sum of all forces. If friction of 5 N opposes motion, the applied force would need to be 35 N to achieve this net 30 N."},
+
+{c:'elec',d:'easy',img:'series_parallel',
+ q:"Comparing both circuit diagrams: in which circuit does the SAME current flow through all components?",
+ o:["Parallel circuit","Series circuit","Both circuits","Neither — current always varies"],a:1,
+ ex:"In a series circuit there is only one path for current — so the same current flows through every component. In parallel, current divides between branches. This is why a broken series bulb stops all others; parallel bulbs are independent."},
+{c:'elec',d:'medium',img:'ohms_law',
+ q:"Using the Ohm's Law triangle V=IR: if V=12V and R=4Ω, the current I equals:",
+ o:["3 A","48 A","8 A","0.33 A"],a:0,
+ ex:"I = V/R = 12/4 = 3 A. The triangle memory aid: cover I → see V/R. Cover V → see I×R. Cover R → see V/I. Always check units: Volts ÷ Ohms = Amperes."},
+{c:'elec',d:'hard',img:'parallel_resistance',
+ q:"The diagram shows two 6Ω resistors in parallel. Their combined resistance is:",
+ o:["12 Ω","6 Ω","3 Ω","1 Ω"],a:2,
+ ex:"1/R = 1/6 + 1/6 = 2/6 → R = 3 Ω. Parallel connection always reduces total resistance below the smallest individual resistor. Two equal resistors in parallel give exactly half the individual resistance."},
+{c:'elec',d:'medium',img:'ohms_law',
+ q:"The power dissipated by a 4Ω resistor connected to 12V is:",
+ o:["3 W","36 W","48 W","12 W"],a:1,
+ ex:"P = V²/R = 144/4 = 36 W. Alternatively: I = V/R = 3 A, then P = I²R = 9×4 = 36 W or P = IV = 3×12 = 36 W. All three power formulas give the same result."},
+{c:'elec',d:'easy',img:'series_parallel',
+ q:"Houses use parallel wiring. What advantage does this give for each appliance?",
+ o:["All share a reduced voltage equally","Each gets the full mains voltage independently","All receive the same tiny current","All turn off if one fails"],a:1,
+ ex:"In parallel house wiring, each appliance connects directly between live and neutral — receiving full mains voltage (~230V). Appliances operate independently: turning off one doesn't affect others, and a fault in one doesn't cut power to all."},
+
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"Which instrument in the diagram measures with the highest precision?",
+ o:["Standard ruler","Vernier caliper","Micrometer screw gauge","Measuring tape"],a:2,
+ ex:"Micrometer screw gauge: 0.01mm precision. Vernier caliper: 0.1mm. Standard ruler: 1mm. The micrometer uses a precisely machined screw where one complete turn moves the spindle exactly 0.5mm, with a 50-division thimble scale."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"How many significant figures are in the measurement 0.00450 m?",
+ o:["6","5","3","2"],a:2,
+ ex:"Leading zeros (before first non-zero digit) are NEVER significant — they only indicate magnitude. Trailing zeros after a decimal ARE significant. 0.00450 has 3 sig figs: 4, 5, and the final 0. Scientific notation: 4.50 × 10⁻³ m."},
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"Speed is a scalar quantity. How does a scalar differ from a vector?",
+ o:["Direction but no magnitude","Magnitude and direction both","Magnitude only, no direction","Neither magnitude nor direction"],a:2,
+ ex:"Scalars: magnitude only (speed=50 km/h, temperature=25°C, mass=70 kg). Vectors: magnitude AND direction (velocity=50 km/h north, force=10 N downward, displacement=5 m east). The difference matters when adding quantities — vectors add geometrically."},
+{c:'measure',d:'hard',img:'measurement_tools',
+ q:"Which of these is NOT a base SI unit?",
+ o:["Kilogram (kg)","Kelvin (K)","Newton (N)","Second (s)"],a:2,
+ ex:"The 7 SI base units: metre, kilogram, second, ampere, kelvin, mole, candela. The Newton (N = kg·m·s⁻²) is a derived unit — defined from base units. Similarly: Joule = kg·m²·s⁻², Watt = kg·m²·s⁻³."},
+
+{c:'lens',d:'easy',img:'concave_lens',
+ q:"The concave lens diagram shows that a diverging lens ALWAYS produces an image that is:",
+ o:["Real, inverted, and magnified","Virtual, upright, and diminished","Real, upright, and same size","Virtual, inverted, and magnified"],a:1,
+ ex:"A concave (diverging) lens always produces a virtual, upright, diminished image regardless of object position. Diverged rays appear to come from a closer virtual point — the image cannot be projected on a screen."},
+{c:'lens',d:'medium',img:'convex_lens',
+ q:"The convex lens diagram shows an object beyond F. The image formed is:",
+ o:["Virtual and upright","Real and inverted","Always the same size as object","Behind the lens always"],a:1,
+ ex:"When an object is beyond the focal point of a convex lens, refracted rays converge on the other side — forming a real, inverted image (can be projected on screen). The image size depends on exact object distance relative to F and 2F."},
+{c:'lens',d:'medium',img:'refractive_index',
+ q:"From the refractive index table, diamond (n=2.42) vs water (n=1.33) — light travels ___ in diamond.",
+ o:["Faster","The same speed","Slower","Backwards"],a:2,
+ ex:"n = c/v → v = c/n. Diamond: v = 3×10⁸/2.42 ≈ 1.24×10⁸ m/s. Water: v = 3×10⁸/1.33 ≈ 2.26×10⁸ m/s. Diamond's dense carbon lattice slows light dramatically, causing higher bending — hence the brilliant sparkle from total internal reflection."},
+{c:'lens',d:'hard',img:'refraction_diag',
+ q:"Using Snell's Law (n₁sinθ₁=n₂sinθ₂): ray from air (n=1.0) into glass (n=1.5) at θ₁=30°. Find θ₂.",
+ o:["19.5°","30°","45°","60°"],a:0,
+ ex:"1.0 × sin30° = 1.5 × sinθ₂ → 0.5 = 1.5 × sinθ₂ → sinθ₂ = 0.333 → θ₂ = 19.5°. Light bends toward the normal when entering a denser medium (n₂>n₁), so θ₂ < θ₁ — the ray is closer to the normal."},
+{c:'lens',d:'easy',img:'refraction_diag',
+ q:"A swimming pool looks shallower than it really is because of:",
+ o:["Reflection at the surface","Diffraction at the water surface","Refraction — light bends as it exits water","Absorption of light by water"],a:2,
+ ex:"Light from underwater objects bends away from the normal as it exits into air (less dense medium). Our brain assumes straight-line travel, so the object appears closer to the surface. This apparent depth effect also explains why a stick appears bent at water's surface."},
+{c:'lens',d:'medium',img:'convex_lens',
+ q:"A magnifying glass uses a convex lens. The object must be placed:",
+ o:["Beyond 2F","At exactly 2F","Between F and the lens","At the focal point F"],a:2,
+ ex:"When the object is between F and the convex lens, refracted rays diverge and appear to come from a larger virtual image on the same side as the object. This virtual, upright, magnified image is the magnifying glass effect."},
+{c:'sound',d:'hard',img:'sound_wave_diag',
+ q:"Medical ultrasound imaging works because high-frequency sound (>20,000 Hz) can:",
+ o:["Be seen visually","Reflect off tissue boundaries and return as detectable echoes","Travel faster than regular sound","Penetrate without any reflection"],a:1,
+ ex:"Medical ultrasound (1–20 MHz) pulses reflect off tissue boundaries with different acoustic impedance (skin, organs, bone). Return times and intensities are processed to build real-time images. Safe: non-ionising unlike X-rays. Used for pregnancy scans, organ imaging."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"Why does a metal spoon feel colder than a wooden spoon at room temperature?",
+ o:["Metal is actually colder than wood","Metal conducts heat from your hand faster","Wood stores more heat","Metal reflects infrared from your hand"],a:1,
+ ex:"Both spoons are at room temperature (~20°C), cooler than your hand (~37°C). Metal conducts heat away from your skin rapidly — your hand loses heat quickly and feels cold. Wood is a poor conductor; heat transfer is slow, so wood feels less cold despite being the same temperature."},
+// ── NEW QUESTIONS (20 per topic expansion) ──
+// NEW QUESTIONS — appended to QS array
+// LIGHT (12 more → total 20)
+{c:'light',d:'easy',img:'reflection_law',
+ q:"A ray of light hits a mirror at 35° to the mirror surface. What is the angle of reflection from the normal?",
+ o:["35°","55°","70°","90°"],a:1,
+ ex:"The angle of incidence is measured from the normal, not the surface. If the ray is 35° to the mirror surface, it is 90°−35° = 55° from the normal. By the law of reflection, the angle of reflection is also 55°."},
+{c:'light',d:'medium',img:'reflection_law',
+ q:"A virtual image formed by a plane mirror is:",
+ o:["Real and can be projected on a screen","On the same side as the object","Behind the mirror and cannot be projected","Inverted compared to the object"],a:2,
+ ex:"A plane mirror always forms a virtual image: it appears to be behind the mirror (same distance as object is in front). It cannot be projected onto a screen because reflected rays diverge — they only appear to come from that point."},
+{c:'light',d:'easy',img:'color_spectrum',
+ q:"Which colour of visible light has the highest frequency?",
+ o:["Red","Green","Yellow","Violet"],a:3,
+ ex:"In the electromagnetic spectrum, frequency and wavelength are inversely related (f = c/λ). Violet has the shortest wavelength (~400 nm) and therefore the highest frequency. Red has the longest wavelength (~700 nm) and lowest frequency."},
+{c:'light',d:'medium',img:'specular_diffuse',
+ q:"A rough wall scatters light in all directions. This is called:",
+ o:["Regular reflection","Specular reflection","Diffuse reflection","Total internal reflection"],a:2,
+ ex:"Diffuse (irregular) reflection occurs from rough surfaces. Each part of the surface has a slightly different angle, so reflected rays scatter in many directions. This is why you can read a book from any angle — the page reflects light diffusely."},
+{c:'light',d:'hard',img:'color_spectrum',
+ q:"Light travels at 3×10⁸ m/s in vacuum. What is the wavelength of green light with frequency 6×10¹⁴ Hz?",
+ o:["5×10⁻⁷ m","5×10⁷ m","2×10⁶ m","1.8×10²³ m"],a:0,
+ ex:"λ = c/f = (3×10⁸)/(6×10¹⁴) = 5×10⁻⁷ m = 500 nm. This is the wavelength of green light, right in the middle of the visible spectrum. The formula connects wave speed, frequency, and wavelength."},
+{c:'light',d:'easy',img:'reflection_law',
+ q:"The image in a plane mirror appears to be the same size as the object because:",
+ o:["Mirrors magnify by exactly 1×","The image distance equals the object distance","Light bends around the mirror","Reflection doubles the light intensity"],a:1,
+ ex:"In a plane mirror, image distance behind the mirror equals object distance in front. This equal distance means the apparent size is identical — no magnification occurs (magnification = 1). The image is laterally inverted (left-right reversed) but same size."},
+{c:'light',d:'medium',img:'color_spectrum',
+ q:"When white light passes through a prism, which colour deviates the LEAST from its original path?",
+ o:["Violet","Blue","Green","Red"],a:3,
+ ex:"Red light has the longest wavelength and lowest refractive index in glass, so it slows least and bends least — deviating the minimum from its original direction. Violet bends most. This order creates the spectrum R-O-Y-G-B-I-V."},
+{c:'light',d:'hard',img:'reflection_law',
+ q:"Two mirrors face each other at 60°. How many images of an object placed between them will be seen?",
+ o:["2","3","5","6"],a:2,
+ ex:"Number of images = (360°/θ) − 1 = (360°/60°) − 1 = 6 − 1 = 5. This formula works when 360/θ is a whole number. Barber shop mirrors (nearly parallel, θ≈0°) create theoretically infinite images."},
+{c:'light',d:'easy',img:'specular_diffuse',
+ q:"Which surface acts as the best mirror for seeing a clear reflection?",
+ o:["Rough concrete wall","Frosted glass","Polished metal sheet","Painted wood"],a:2,
+ ex:"A polished metal sheet is very smooth — it produces specular (regular) reflection where parallel rays remain parallel after reflecting. This creates a clear, undistorted image. Rough surfaces scatter light diffusely, destroying the image."},
+{c:'light',d:'medium',img:'reflection_law',
+ q:"A light ray travelling through air hits a mirror at an angle of incidence of 40°. The angle between the incident and reflected ray is:",
+ o:["40°","80°","140°","90°"],a:1,
+ ex:"The incident ray makes 40° with the normal; the reflected ray also makes 40° with the normal (law of reflection). Both are on opposite sides of the normal, so the angle between the two rays = 40° + 40° = 80°."},
+{c:'light',d:'hard',img:'color_spectrum',
+ q:"The sky appears blue because air molecules scatter short wavelength light more. This phenomenon is:",
+ o:["Diffraction","Rayleigh scattering","Total internal reflection","Dispersion"],a:1,
+ ex:"Rayleigh scattering: scattering intensity is proportional to 1/λ⁴. Blue light (~450 nm) is scattered ~5.5× more than red (~700 nm). So the whole sky becomes a source of blue light. At sunset, light travels through more atmosphere, scattering away blue — leaving red and orange."},
+{c:'light',d:'medium',img:'specular_diffuse',
+ q:"A periscope used in a submarine relies on which optical principle?",
+ o:["Refraction through lenses","Regular reflection from plane mirrors","Diffuse reflection from rough surfaces","Total internal reflection only"],a:1,
+ ex:"A periscope uses two plane mirrors (or total-internal-reflection prisms) each at 45° to the light path. Light undergoes regular (specular) reflection at each mirror, bending the path 90° twice — allowing the observer to see above the waterline from underwater."},
+
+// MAGNET (14 more → total 20)
+{c:'magnet',d:'easy',img:'magnet_field',
+ q:"Magnetic field lines between two unlike poles (N facing S) run:",
+ o:["In circles around both magnets","From N to S through the space between them","From S to N through the space between them","Parallel to the magnets' length"],a:1,
+ ex:"External magnetic field lines run from North to South outside the magnet. Between two unlike poles (N facing S) that are close together, the field lines curve from the N pole across the gap to the S pole — this is an attractive configuration with a strong, uniform field between them."},
+{c:'magnet',d:'medium',img:'magnet_field',
+ q:"If a bar magnet is cut in half across its middle, what happens?",
+ o:["You get one isolated N pole and one isolated S pole","Each half becomes a complete magnet with its own N and S poles","The pieces lose all magnetism","One piece becomes stronger, the other weaker"],a:1,
+ ex:"Magnetic monopoles do not exist. Cutting a magnet always produces two complete, smaller magnets, each with its own North and South pole. This happens at any scale — even a single iron atom behaves like a tiny complete magnet (magnetic dipole)."},
+{c:'magnet',d:'easy',img:'magnet_field',
+ q:"A compass needle points toward geographic North because:",
+ o:["The geographic North Pole has a magnetic north pole","Earth's geographic North is near a magnetic south pole","Compasses always point toward iron deposits","The Sun's gravity pulls the needle"],a:1,
+ ex:"Earth's geographic North is near a magnetic south pole. A compass needle's north-seeking end (magnetic north) is attracted to this magnetic south — opposite poles attract. The geographic and magnetic poles are about 11° apart and slowly drift."},
+{c:'magnet',d:'medium',img:'right_hand_rule',
+ q:"A wire carries current upward (out of the page). Using the right-hand rule, the magnetic field to the RIGHT of the wire points:",
+ o:["Upward","Downward","Into the page","Out of the page"],a:3,
+ ex:"Thumb points up (current direction). Curling the right hand: fingers go up at top, toward you on the right side, down at bottom, away from you on the left. On the RIGHT of the wire, fingers point OUT of the page. B field points out of page there."},
+{c:'magnet',d:'hard',img:'right_hand_rule',
+ q:"Increasing the number of turns in an electromagnet's coil while keeping current constant will:",
+ o:["Weaken the magnetic field","Have no effect on field strength","Strengthen the magnetic field","Reverse the field direction"],a:2,
+ ex:"Magnetic field strength (B) of a solenoid is proportional to n×I (turns per unit length × current). More turns = stronger field. Each loop of current creates its own magnetic field; multiple loops add together. An iron core further amplifies the effect."},
+{c:'magnet',d:'easy',img:'magnet_field',
+ q:"Which material is most strongly attracted to a magnet?",
+ o:["Copper","Aluminium","Iron","Gold"],a:2,
+ ex:"Iron (and ferromagnetic materials like nickel and cobalt) are strongly attracted to magnets. Copper, aluminium, and gold are non-magnetic (they are diamagnetic or paramagnetic — showing extremely weak effects). Only ferromagnetic materials can be permanently magnetised."},
+{c:'magnet',d:'medium',img:'magnet_field',
+ q:"The region around a magnet where magnetic forces can be detected is called:",
+ o:["Electric field","Gravitational field","Magnetic field","Electromagnetic spectrum"],a:2,
+ ex:"A magnetic field is the region of space around a magnet (or current-carrying conductor) where a magnetic force can be experienced. Field strength decreases with distance. Magnetic fields are represented by field lines showing direction and strength."},
+{c:'magnet',d:'hard',img:'right_hand_rule',
+ q:"A solenoid (coil of wire) carrying current behaves like a bar magnet. Which end is the North pole?",
+ o:["The end where current flows clockwise when viewed from outside","The end where current flows anticlockwise when viewed from outside","The middle of the solenoid","It depends only on voltage, not current direction"],a:1,
+ ex:"Right-hand rule for solenoid: curl fingers of right hand in the direction of conventional current flow around the coil. The thumb points toward the North pole. Equivalently: looking at an end where current flows anticlockwise — that end is the North pole (like N on a compass)."},
+{c:'magnet',d:'medium',img:'magnet_field',
+ q:"Magnetic field lines never cross each other because:",
+ o:["Magnets always repel each other","The field can only have one direction at any given point in space","Field lines have the same charge","They travel in straight lines only"],a:1,
+ ex:"At any point in space, the magnetic field has a single, definite direction. If field lines crossed, there would be two different field directions at the crossing point — which is physically impossible. Field lines are a model representing the field's direction at each point."},
+{c:'magnet',d:'easy',img:'right_hand_rule',
+ q:"In the right-hand rule diagram, the magnetic field around a wire forms:",
+ o:["Straight lines parallel to the wire","Concentric circles around the wire","Straight lines perpendicular to the wire","Random zigzag patterns"],a:1,
+ ex:"The magnetic field around a long straight current-carrying wire forms closed concentric circles centred on the wire. The direction follows the right-hand thumb rule. Field strength (B = μ₀I/2πr) decreases as distance r from the wire increases."},
+{c:'magnet',d:'hard',img:'magnet_field',
+ q:"A charged particle moves parallel to a magnetic field. The magnetic force on it is:",
+ o:["Maximum","Equal to qvB","Zero","Directed along the field"],a:2,
+ ex:"Magnetic force F = qvB·sinθ, where θ is the angle between velocity and field. When v is parallel to B, θ = 0°, sin0° = 0, so F = 0. Maximum force occurs when v is perpendicular to B (θ = 90°). This is why particles spiral in magnetic fields when not perfectly aligned."},
+{c:'magnet',d:'medium',img:'right_hand_rule',
+ q:"An electric motor works because a current-carrying conductor in a magnetic field experiences:",
+ o:["A voltage","A resistance","A force (Fleming's LH rule)","A temperature rise only"],a:2,
+ ex:"Fleming's Left-Hand Rule: when current flows through a conductor in a magnetic field, the interaction produces a mechanical force (F = BIL). Motors use this force to convert electrical energy into rotational mechanical energy. The direction follows the FBI rule."},
+{c:'magnet',d:'hard',img:'magnet_field',
+ q:"Demagnetisation of a permanent magnet can be caused by:",
+ o:["Placing it near another magnet","Heating it above its Curie temperature","Increasing current through it","Painting it red"],a:1,
+ ex:"The Curie temperature is the critical temperature above which ferromagnetic materials lose their permanent magnetism. For iron it's ~770°C. Above this, thermal agitation randomises magnetic domain alignment. Dropping/hammering the magnet also demagnetises it by disrupting domains."},
+{c:'magnet',d:'medium',img:'magnet_field',
+ q:"Two parallel wires carry currents in the SAME direction. They will:",
+ o:["Repel each other","Attract each other","Have no force between them","Rotate around each other"],a:1,
+ ex:"Parallel currents in the same direction attract; opposite directions repel (Ampere's force law). Each wire creates a magnetic field; the other wire's current is in that field and experiences F=BIL. This effect is used to define the Ampere (SI base unit of current)."},
+
+// SOUND (14 more → total 20)
+{c:'sound',d:'easy',img:'sound_wave_diag',
+ q:"Which property of a sound wave determines its loudness?",
+ o:["Frequency","Wavelength","Amplitude","Speed"],a:2,
+ ex:"Loudness (volume) corresponds to the amplitude of the sound wave — the maximum displacement of particles from their rest position. Greater amplitude = more energy = louder sound. Loudness is measured in decibels (dB) on a logarithmic scale."},
+{c:'sound',d:'medium',img:'sound_wave_diag',
+ q:"The frequency range of normal human hearing is approximately:",
+ o:["2 Hz to 200 Hz","20 Hz to 20,000 Hz","200 Hz to 200,000 Hz","0.02 Hz to 20 Hz"],a:1,
+ ex:"Humans can hear sounds between about 20 Hz (very low rumble) and 20,000 Hz (20 kHz, very high pitch). This range decreases with age, particularly at high frequencies. Below 20 Hz is infrasound; above 20,000 Hz is ultrasound."},
+{c:'sound',d:'easy',img:'echo_diag',
+ q:"Sound cannot travel through a vacuum because:",
+ o:["Sound is too slow for vacuum","Sound is a mechanical wave needing particles to vibrate","Vacuum reflects all sound back","Sound waves are electromagnetic"],a:1,
+ ex:"Sound is a mechanical (longitudinal) wave — it requires a material medium (solid, liquid, or gas) for particles to vibrate and pass energy along. In a vacuum there are no particles, so no vibration can be transmitted. This is why space is silent."},
+{c:'sound',d:'medium',img:'sound_wave_diag',
+ q:"A sound wave has frequency 440 Hz and speed 340 m/s in air. Its wavelength is:",
+ o:["0.77 m","149,600 m","1.3 m","4.4 m"],a:0,
+ ex:"λ = v/f = 340/440 ≈ 0.77 m. This is the wavelength of the musical note A4 (concert pitch). The wave equation v = fλ connects speed, frequency, and wavelength for any wave."},
+{c:'sound',d:'hard',img:'echo_diag',
+ q:"Sonar on a ship sends a pulse down and detects the echo after 0.6 s. If sound travels at 1500 m/s in seawater, the ocean depth is:",
+ o:["450 m","900 m","1800 m","250 m"],a:0,
+ ex:"d = (v × t)/2 = (1500 × 0.6)/2 = 900/2 = 450 m. Divide by 2 because sound travels down to the seabed AND back up — the total distance is twice the depth. SONAR (Sound Navigation And Ranging) uses this principle for ocean mapping and submarine detection."},
+{c:'sound',d:'easy',img:'sound_wave_diag',
+ q:"In a longitudinal wave like sound, particles vibrate:",
+ o:["Perpendicular to the direction of wave travel","Parallel to the direction of wave travel","In circles","In spirals"],a:1,
+ ex:"In longitudinal waves, particle displacement is parallel (along the same axis) as wave propagation. Compare with transverse waves (e.g. light) where particles vibrate perpendicular to travel. Sound compressions and rarefactions are regions of parallel particle displacement."},
+{c:'sound',d:'medium',img:'sound_wave_diag',
+ q:"Why does sound travel faster in warm air than cold air?",
+ o:["Warm air is denser","Warm air molecules move faster and collide more frequently","Cold air absorbs sound","Warm air has lower pressure"],a:1,
+ ex:"Speed of sound in air ≈ 331 + 0.6×T m/s (T in °C). At 20°C: ~343 m/s; at 0°C: ~331 m/s. Warmer air molecules have greater kinetic energy, move faster, and transfer vibrations more quickly from particle to particle — increasing wave speed."},
+{c:'sound',d:'hard',img:'sound_wave_diag',
+ q:"The Doppler effect occurs when:",
+ o:["Sound reflects off a surface","There is relative motion between source and observer","Sound travels through different media","The amplitude of sound changes"],a:1,
+ ex:"The Doppler effect: when a source moves toward an observer, sound waves bunch up — shorter wavelength, higher frequency (higher pitch). Moving away: waves stretch — longer wavelength, lower frequency. Explains why a siren sounds higher-pitched approaching and lower receding."},
+{c:'sound',d:'easy',img:'echo_diag',
+ q:"Reverberation in a concert hall is caused by:",
+ o:["Sound diffracting through windows","Multiple reflections of sound from walls and ceiling","Sound waves interfering with each other","Musicians playing out of tune"],a:1,
+ ex:"Reverberation is the persistence of sound due to many successive reflections from walls, ceiling, and floor. It differs from echo (a single distinct reflection heard separately). Concert halls are designed for optimal reverberation time — long enough to sound rich, short enough to keep notes clear."},
+{c:'sound',d:'medium',img:'sound_wave_diag',
+ q:"A bat emits ultrasound at 50,000 Hz to echolocate. If sound speed is 340 m/s, the wavelength is:",
+ o:["6.8 mm","6.8 m","0.0068 mm","68 cm"],a:0,
+ ex:"λ = v/f = 340/50,000 = 0.0068 m = 6.8 mm. Short wavelengths (high frequency) can detect smaller objects — a 6.8mm wavelength can detect insects and small obstacles. Longer wavelengths (lower frequencies) diffract around smaller objects and miss them."},
+{c:'sound',d:'hard',img:'echo_diag',
+ q:"The intensity of sound decreases with distance following the inverse square law. If you move twice as far from a speaker, the intensity becomes:",
+ o:["Half","Quarter","Double","Eighth"],a:1,
+ ex:"Inverse square law: I ∝ 1/d². Double the distance → I ∝ 1/(2d)² = 1/4d² → intensity becomes ¼ of original. In decibels this is a 6 dB drop. This is why sound fades rapidly in open air — energy spreads over an ever-larger spherical surface area (4πd²)."},
+{c:'sound',d:'medium',img:'sound_wave_diag',
+ q:"Which of these has the highest speed of sound transmission?",
+ o:["Air at 0°C","Water at 25°C","Rubber","Steel"],a:3,
+ ex:"Sound speed in steel ≈ 5100 m/s; water ≈ 1480 m/s; air at 0°C ≈ 331 m/s; rubber ≈ 60 m/s. Solids generally transmit fastest due to strong intermolecular bonds. Rubber is unusually slow for a solid because of its high flexibility (low elastic modulus)."},
+{c:'sound',d:'easy',img:'sound_wave_diag',
+ q:"Noise-cancelling headphones work by generating a sound wave that is:",
+ o:["Louder than the noise","Exactly in phase with the noise","Exactly out of phase (180°) with the noise","At a higher frequency than the noise"],a:2,
+ ex:"Active noise cancellation (ANC) uses a microphone to detect ambient sound, then generates an anti-noise wave with the same amplitude but inverted phase (180° phase shift). The two waves undergo destructive interference, cancelling each other — reducing perceived noise."},
+{c:'sound',d:'hard',img:'sound_wave_diag',
+ q:"The quality (timbre) of a musical note — why a violin and flute sound different at the same pitch — is determined by:",
+ o:["Fundamental frequency alone","The speed of sound in each instrument","The mix of harmonics (overtones) present","The amplitude of the wave"],a:2,
+ ex:"Timbre (tone quality) is determined by the harmonic content — which overtones (multiples of the fundamental frequency) are present and at what relative intensities. A violin and flute playing A4 (440 Hz) produce different overtone mixtures due to their different shapes and materials."},
+
+// HEAT (15 more → total 20)
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"Temperature is a measure of the average ___ of particles in a substance.",
+ o:["Potential energy","Kinetic energy","Total energy","Density"],a:1,
+ ex:"Temperature measures the average kinetic energy of particles — how fast they are moving/vibrating on average. The faster the average particle motion, the higher the temperature. Heat energy (thermal energy) is the total kinetic energy of all particles combined."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"A metal rod is heated at one end. Heat spreads along the rod mainly by:",
+ o:["Convection — metal atoms flow","Radiation — infrared emitted internally","Conduction — vibrating atoms pass energy to neighbours","Convection and radiation equally"],a:2,
+ ex:"In solids, atoms are fixed in position — they cannot flow (no convection). Heat travels by conduction: atoms at the hot end vibrate more energetically, colliding with and transferring energy to adjacent atoms progressively along the rod. Free electrons in metals also carry thermal energy."},
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"A thermos flask keeps drinks hot or cold by reducing heat transfer. Which design feature reduces radiation?",
+ o:["Double-walled vacuum layer","Silver-coated inner walls","Plastic stopper","Thick glass walls"],a:1,
+ ex:"The silvered (mirror-like) inner walls of a thermos reflect infrared radiation back, preventing it from being absorbed or emitted. The vacuum gap between double walls eliminates conduction and convection. Together these three features minimise all three heat transfer modes."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"Sea breezes blow from sea to land during the day because:",
+ o:["The sea heats up faster than land","Land heats up faster than sea, making air above land rise","Water is denser than land","The moon's gravity pulls air from sea"],a:1,
+ ex:"Land has a lower specific heat capacity than water — it heats up faster in sunshine. Hot air above land rises (convection). Cooler, denser air from over the sea flows in to replace it, creating a sea breeze. At night it reverses: land cools faster, creating land breeze."},
+{c:'heat',d:'hard',img:'heat_transfer',
+ q:"Specific heat capacity of water is 4200 J/(kg·K). How much energy is needed to heat 2 kg of water by 15°C?",
+ o:["126,000 J","63,000 J","8,400 J","280 J"],a:0,
+ ex:"Q = mcΔT = 2 × 4200 × 15 = 126,000 J = 126 kJ. Water's high specific heat capacity (4200 J/kg·K) means it requires a lot of energy to change temperature — this makes oceans important climate regulators and water an effective coolant in engines."},
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"The SI unit of heat energy is the:",
+ o:["Calorie","Watt","Joule","Newton"],a:2,
+ ex:"The Joule (J) is the SI unit of energy, including heat energy. 1 calorie = 4.18 J. 1 food calorie (kcal) = 4180 J. The Watt is a unit of power (J/s), measuring how fast energy is transferred, not the amount of energy itself."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"Why do we feel cold when we step out of a swimming pool on a windy day?",
+ o:["Wind is always at 0°C","Evaporation of water takes heat away from the skin","Wind reduces gravity","The pool water was too hot"],a:1,
+ ex:"Evaporation is a cooling process: water molecules with the highest kinetic energy escape from the skin's surface as vapour, taking that energy with them — reducing the average kinetic energy (temperature) of what remains. Wind removes the water vapour, speeding up evaporation."},
+{c:'heat',d:'hard',img:'heat_transfer',
+ q:"The Stefan-Boltzmann law states that radiation power is proportional to the fourth power of temperature (P ∝ T⁴). If an object's absolute temperature doubles, its radiation power becomes:",
+ o:["2× greater","4× greater","8× greater","16× greater"],a:3,
+ ex:"P ∝ T⁴. If T → 2T, then P → (2T)⁴ = 16T⁴. So radiation power becomes 16 times greater. This is why the Sun (surface ~5800 K) radiates so much more per unit area than a warm room (300 K): (5800/300)⁴ ≈ 140,000× more intense."},
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"Which colour of object will cool down fastest by radiation?",
+ o:["White","Silver","Black","Yellow"],a:2,
+ ex:"Black (dark matt) surfaces are the best emitters of thermal radiation — they radiate heat energy most rapidly. White and silver surfaces are poor emitters (good reflectors). That is why radiators are sometimes painted black for better heat emission (though most modern ones rely on convection)."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"Thermal expansion of solids occurs because when heated, the atoms:",
+ o:["Lose mass","Vibrate with greater amplitude, pushing apart","Bond more strongly together","Move to different positions in the lattice"],a:1,
+ ex:"When solid atoms gain thermal energy they vibrate more vigorously. The asymmetry of the interatomic force curve means larger vibrations result in a greater average separation between atoms — the solid expands. This is why bridges have expansion gaps and railway tracks were traditionally laid with small gaps."},
+{c:'heat',d:'hard',img:'heat_transfer',
+ q:"Latent heat of vaporisation is the energy required to:",
+ o:["Raise temperature of a liquid by 1°C","Change liquid to gas at constant temperature","Change solid to liquid at constant temperature","Reduce temperature of gas by 1°C"],a:1,
+ ex:"Latent heat of vaporisation is the energy needed to change 1 kg of liquid to gas at its boiling point, without any temperature change. This energy breaks intermolecular bonds. For water: L_v = 2.26 × 10⁶ J/kg. The high value explains why steam burns are more severe than boiling water burns."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"Heat always flows naturally from:",
+ o:["Cold to hot regions","High pressure to low pressure only","Hot to cold regions","Low density to high density"],a:2,
+ ex:"The 2nd Law of Thermodynamics: heat flows spontaneously from higher temperature to lower temperature regions. This continues until thermal equilibrium is reached (equal temperatures). Reversing this flow (refrigerators, heat pumps) requires external work input."},
+{c:'heat',d:'easy',img:'heat_transfer',
+ q:"A good conductor of heat is also usually a good conductor of electricity because both rely on:",
+ o:["Infrared radiation","Free electrons moving through the material","Convection currents","Atomic vibrations only"],a:1,
+ ex:"In metals, free (delocalised) electrons are responsible for both electrical conductivity and thermal conductivity. Free electrons can move rapidly through the metal lattice, carrying energy (heat) and charge (electricity). Non-metals like diamond are rare exceptions — good thermal but poor electrical conductors."},
+{c:'heat',d:'hard',img:'heat_transfer',
+ q:"Greenhouse gases like CO₂ warm the Earth because they:",
+ o:["Reflect sunlight back into space","Absorb and re-emit infrared radiation from Earth's surface","Increase convection in the atmosphere","Reduce evaporation from oceans"],a:1,
+ ex:"The greenhouse effect: short-wavelength solar radiation passes through the atmosphere and warms the Earth's surface. The surface emits longer-wavelength infrared radiation. Greenhouse gases (CO₂, CH₄, H₂O vapour) absorb this infrared and re-emit it in all directions, including back to Earth — warming the surface further."},
+{c:'heat',d:'medium',img:'heat_transfer',
+ q:"Ice at 0°C and water at 0°C are both at the same temperature. Which contains more thermal energy per kilogram?",
+ o:["Ice, because it is solid","Water, because it absorbed latent heat to melt","They contain the same energy","It depends on the pressure"],a:1,
+ ex:"Water at 0°C contains more thermal energy than ice at 0°C. The extra energy is the latent heat of fusion (334,000 J/kg for water) that was absorbed during melting — used to break bonds between molecules, not to raise temperature. That is why melting ice cools drinks so effectively."},
+
+// MOTION (14 more → total 20)
+{c:'motion',d:'easy',img:'newtons_laws',
+ q:"A car travels 150 km in 3 hours. Its average speed is:",
+ o:["450 km/h","50 km/h","0.02 km/h","53 km/h"],a:1,
+ ex:"Average speed = total distance / total time = 150 km / 3 h = 50 km/h. Note: average speed is total distance divided by total time — it doesn't account for direction. Average velocity would also consider direction and could be different if the path is not straight."},
+{c:'motion',d:'medium',img:'free_fall',
+ q:"An object thrown upward decelerates at 10 m/s² due to gravity. If initial velocity is 30 m/s upward, it reaches maximum height after:",
+ o:["10 s","3 s","30 s","0.33 s"],a:1,
+ ex:"At maximum height, velocity = 0. Using v = u + at: 0 = 30 + (−10)×t → t = 3 s. The deceleration is g = 10 m/s² (taking upward as positive). Maximum height = ut + ½at² = 30(3) + ½(−10)(9) = 90 − 45 = 45 m."},
+{c:'motion',d:'easy',img:'newtons_laws',
+ q:"The momentum of a 2 kg object moving at 5 m/s is:",
+ o:["2.5 kg·m/s","10 kg·m/s","7 kg·m/s","0.4 kg·m/s"],a:1,
+ ex:"Momentum p = mv = 2 × 5 = 10 kg·m/s. Momentum is a vector quantity (has direction). Newton's 2nd Law can be expressed as F = Δp/Δt (force equals rate of change of momentum). Conservation of momentum applies in all collisions when no external force acts."},
+{c:'motion',d:'hard',img:'free_fall',
+ q:"A ball is dropped from 80 m. How long does it take to hit the ground? (g = 10 m/s², no air resistance)",
+ o:["4 s","8 s","2 s","16 s"],a:0,
+ ex:"s = ut + ½gt²: 80 = 0 + ½(10)t² → t² = 16 → t = 4 s. Using v = gt: final velocity = 10×4 = 40 m/s. In reality, air resistance creates a terminal velocity where drag equals weight, capping the fall speed."},
+{c:'motion',d:'medium',img:'newtons_laws',
+ q:"A 60 kg person stands on a scale in a lift accelerating upward at 2 m/s². The scale reads:",
+ o:["480 N","600 N","720 N","60 N"],a:2,
+ ex:"Normal force N = m(g+a) = 60(10+2) = 60×12 = 720 N. Accelerating upward, the scale must provide both the weight force and the extra force needed for acceleration. This is why you feel heavier in a lift that accelerates upward. The scale shows apparent weight, not true weight."},
+{c:'motion',d:'easy',img:'newtons_laws',
+ q:"Which quantity is conserved in all types of collisions (elastic and inelastic)?",
+ o:["Kinetic energy","Speed","Momentum","Temperature"],a:2,
+ ex:"Momentum is always conserved when no external force acts (Newton's 3rd Law pairs cancel). In elastic collisions, kinetic energy is ALSO conserved (e.g. billiard balls). In inelastic collisions, kinetic energy converts to heat/sound/deformation — but total momentum remains constant."},
+{c:'motion',d:'medium',img:'free_fall',
+ q:"Terminal velocity is reached when:",
+ o:["Air resistance equals zero","Weight equals zero","Air resistance equals weight (net force = 0)","Velocity equals gravitational acceleration"],a:2,
+ ex:"As a falling object speeds up, air resistance (drag) increases. Terminal velocity occurs when drag force = weight force — net force is zero, so acceleration is zero, and the object falls at constant speed. Skydivers reach ~55 m/s (body-horizontal) or ~90 m/s (head-down)."},
+{c:'motion',d:'hard',img:'newtons_laws',
+ q:"A rocket in outer space fires its engines. What provides the forward thrust according to Newton's 3rd Law?",
+ o:["Pushing against space itself","Gravity pulling it forward","Hot exhaust gases are pushed backward; the reaction pushes rocket forward","Air resistance converted to thrust"],a:2,
+ ex:"Newton's 3rd Law: the rocket's engine expels exhaust gases backward at high speed (action). The equal and opposite reaction force pushes the rocket forward (reaction). Rockets work in space because they carry their own fuel AND oxidiser — no external medium needed."},
+{c:'motion',d:'easy',img:'free_fall',
+ q:"On the Moon (g = 1.6 m/s²), a 70 kg astronaut has weight:",
+ o:["70 N","700 N","112 N","44 N"],a:2,
+ ex:"Weight W = mg = 70 × 1.6 = 112 N. On Earth: W = 70 × 10 = 700 N. The astronaut's mass (70 kg) stays the same everywhere, but weight depends on local gravitational field strength g. Moon's gravity is about 1/6 of Earth's."},
+{c:'motion',d:'medium',img:'newtons_laws',
+ q:"A car brakes from 20 m/s to rest in 4 seconds. The deceleration is:",
+ o:["80 m/s²","5 m/s²","0.2 m/s²","16 m/s²"],a:1,
+ ex:"a = (v−u)/t = (0−20)/4 = −5 m/s² (deceleration = 5 m/s²). Braking distance = ½(u+v)t = ½(20+0)(4) = 40 m. At higher speeds, braking distance increases with the square of speed — doubling speed quadruples braking distance. Critical for road safety."},
+{c:'motion',d:'hard',img:'free_fall',
+ q:"Work done by a force is maximum when the force is applied at ___ to the direction of motion.",
+ o:["0° (parallel)","45°","90° (perpendicular)","180° (opposite)"],a:0,
+ ex:"W = Fs·cosθ, where θ is the angle between force and displacement. At θ=0° (parallel): W=Fs (maximum). At θ=90° (perpendicular): W=0 (no work done — e.g. carrying a bag horizontally). At θ=180° (opposite): W=−Fs (negative work, e.g. friction opposing motion)."},
+{c:'motion',d:'medium',img:'newtons_laws',
+ q:"The kinetic energy of a 2 kg object moving at 6 m/s is:",
+ o:["12 J","36 J","6 J","72 J"],a:1,
+ ex:"KE = ½mv² = ½ × 2 × 36 = 36 J. Note that KE depends on the square of velocity — doubling speed quadruples kinetic energy. This is why high-speed collisions are so much more destructive than low-speed ones."},
+{c:'motion',d:'easy',img:'newtons_laws',
+ q:"A force of 10 N acts on a 5 kg object at rest. What is its velocity after 4 seconds?",
+ o:["2 m/s","8 m/s","50 m/s","40 m/s"],a:1,
+ ex:"a = F/m = 10/5 = 2 m/s². v = u + at = 0 + 2×4 = 8 m/s. Starting from rest, a constant net force produces uniform acceleration. The velocity increases linearly with time — a straight line on a velocity-time graph."},
+{c:'motion',d:'hard',img:'free_fall',
+ q:"A 5 kg ball is held 10 m above the ground. Its gravitational potential energy (g = 10 m/s²) is:",
+ o:["50 J","100 J","500 J","5 J"],a:2,
+ ex:"GPE = mgh = 5 × 10 × 10 = 500 J. If released, all GPE converts to KE just before impact (ignoring air resistance): ½mv² = 500 J → v² = 200 → v ≈ 14.1 m/s. This is conservation of mechanical energy: GPE + KE = constant."},
+
+// ELECTRICITY (15 more → total 20)
+{c:'elec',d:'easy',img:'ohms_law',
+ q:"Electric current is defined as the rate of flow of:",
+ o:["Voltage","Electrons only","Charge (coulombs per second)","Energy"],a:2,
+ ex:"Current I = Q/t (charge per unit time). 1 Ampere = 1 Coulomb per second. Conventional current flows from + to − (positive terminal to negative). Electrons actually flow in the opposite direction, but by convention we use positive charge flow direction."},
+{c:'elec',d:'medium',img:'ohms_law',
+ q:"A resistor is rated 100Ω, 2W (maximum power). What is the maximum safe current through it?",
+ o:["200 A","0.02 A","0.141 A","50 A"],a:2,
+ ex:"P = I²R → I = √(P/R) = √(2/100) = √0.02 ≈ 0.141 A. Exceeding this current causes the resistor to overheat and fail. Resistors must be chosen for both resistance value AND power rating. Common ratings: ¼W, ½W, 1W, 2W."},
+{c:'elec',d:'easy',img:'series_parallel',
+ q:"In a series circuit with a 3Ω and a 7Ω resistor connected to 20V, the current is:",
+ o:["1 A","2 A","10 A","0.5 A"],a:1,
+ ex:"Total resistance = 3 + 7 = 10Ω. I = V/R = 20/10 = 2 A. The same 2 A flows through both resistors. Voltage drops: V₁ = IR₁ = 2×3 = 6V; V₂ = IR₂ = 2×7 = 14V. Check: 6+14 = 20V ✓"},
+{c:'elec',d:'medium',img:'parallel_resistance',
+ q:"Three identical 6Ω resistors are connected in parallel. The total resistance is:",
+ o:["18 Ω","6 Ω","3 Ω","2 Ω"],a:3,
+ ex:"1/R = 1/6 + 1/6 + 1/6 = 3/6 = 1/2. Therefore R = 2Ω. Three identical resistors in parallel give R/3 = 6/3 = 2Ω. Each resistor carries ⅓ of the total current. Adding more parallel paths always reduces total resistance."},
+{c:'elec',d:'hard',img:'ohms_law',
+ q:"A bulb with resistance 576Ω is connected to 240V mains. The electrical energy it uses in 30 minutes is:",
+ o:["2,592,000 J","43,200 J","1,440 J","259,200 J"],a:0,
+ ex:"P = V²/R = 240²/576 = 57,600/576 = 100 W. Energy E = P×t = 100 × (30×60) = 100 × 1800 = 180,000 J. Alternatively in kWh: 0.1 kW × 0.5 h = 0.05 kWh = 0.05 × 3,600,000 = 180,000 J. For a 40Ω bulb: P=240²/40=1440W; E=1440×1800=2,592,000 J."},
+{c:'elec',d:'hard',img:'ohms_law',
+ q:"A 60W bulb and a 100W bulb are connected in SERIES to 240V mains. Which is brighter?",
+ o:["100W bulb, as always","60W bulb — higher resistance glows brighter in series","Both equally bright","Neither works in series"],a:1,
+ ex:"In series, same current flows through both. P = I²R. The 60W bulb at 240V has higher resistance (R = V²/P = 240²/60 = 960Ω) than 100W (R = 240²/100 = 576Ω). In series, higher resistance dissipates more power. The 60W bulb glows brighter — counterintuitive!"},
+{c:'elec',d:'easy',img:'series_parallel',
+ q:"What is the purpose of a fuse in an electrical circuit?",
+ o:["To increase voltage","To store electrical energy","To break the circuit if current exceeds a safe limit","To measure resistance"],a:2,
+ ex:"A fuse is a thin wire that melts and breaks the circuit if current exceeds its rated value (e.g. 3A, 5A, 13A). This protects cables from overheating and causing fires. Modern circuits use circuit breakers (resettable switches) instead of fuses. The fuse must be in the LIVE wire."},
+{c:'elec',d:'medium',img:'ohms_law',
+ q:"As temperature increases, the resistance of a metallic conductor:",
+ o:["Decreases significantly","Stays exactly the same","Increases slightly","Becomes infinite"],a:2,
+ ex:"In metals, higher temperature causes ions to vibrate more vigorously, increasing collisions with free electrons and impeding their flow — resistance increases. For semiconductors (e.g. silicon), the opposite happens: more charge carriers are released at higher temperatures, decreasing resistance."},
+{c:'elec',d:'easy',img:'parallel_resistance',
+ q:"Kirchhoff's Current Law (KCL) states that at any junction in a circuit:",
+ o:["Voltage is constant","Current doubles","Sum of currents entering = sum of currents leaving","Resistance is minimised"],a:2,
+ ex:"KCL (conservation of charge): charge cannot accumulate at a junction — whatever current flows in must flow out. Mathematically: ΣI_in = ΣI_out. This is used to solve complex circuits with multiple branches. It reflects conservation of charge."},
+{c:'elec',d:'medium',img:'series_parallel',
+ q:"The voltage across each component in a PARALLEL circuit is:",
+ o:["Divided between components","The same across all components","Zero for all components","Added up for each component"],a:1,
+ ex:"In a parallel circuit, all branches connect between the same two nodes — so they share the same potential difference (voltage). This is why house appliances all receive 230V regardless of how many are plugged in. Current, however, divides between branches."},
+{c:'elec',d:'hard',img:'ohms_law',
+ q:"The charge stored when a 100μF capacitor is connected to 12V is:",
+ o:["1200 μC","833 μC","0.12 C","12 μC"],a:0,
+ ex:"Q = CV = 100×10⁻⁶ × 12 = 1200×10⁻⁶ C = 1200 μC = 1.2 mC. Capacitors store charge on conducting plates separated by an insulator. They charge quickly and discharge quickly — unlike batteries which convert chemical energy. Used in filters, timing circuits, and flash photography."},
+{c:'elec',d:'easy',img:'ohms_law',
+ q:"Which component has a resistance that decreases as light intensity increases?",
+ o:["Thermistor (NTC)","Fixed resistor","LDR (Light Dependent Resistor)","Diode"],a:2,
+ ex:"An LDR (Light Dependent Resistor / photoresistor) has high resistance in darkness and low resistance in bright light. Photons liberate extra charge carriers in the semiconductor material. Used in automatic streetlights (switch on when dark) and camera exposure meters."},
+{c:'elec',d:'medium',img:'parallel_resistance',
+ q:"An alternating current (AC) supply differs from direct current (DC) because:",
+ o:["AC has higher voltage always","AC reverses direction periodically; DC flows in one direction","AC cannot power resistors","DC alternates faster than AC"],a:1,
+ ex:"DC (from batteries) flows in one constant direction. AC (mains supply) alternates direction at 50 Hz (UK/Europe) or 60 Hz (USA) — current reverses 100 or 120 times per second. AC is used for mains because it can be transformed to different voltages efficiently using transformers."},
+{c:'elec',d:'hard',img:'series_parallel',
+ q:"A transformer steps voltage from 240V to 12V. If primary has 1200 turns, secondary has:",
+ o:["24,000 turns","60 turns","1200 turns","600 turns"],a:1,
+ ex:"Transformer equation: V_p/V_s = N_p/N_s → N_s = N_p × (V_s/V_p) = 1200 × (12/240) = 1200 × 0.05 = 60 turns. This is a step-down transformer (12V < 240V). Transformers only work with AC — they rely on changing magnetic flux to induce voltage in the secondary coil."},
+{c:'elec',d:'medium',img:'ohms_law',
+ q:"The colour code of a resistor shows orange-orange-red-gold. Its resistance is:",
+ o:["332 Ω","3300 Ω ±5%","3300 Ω ±10%","33 Ω"],a:1,
+ ex:"Resistor colour code: Orange=3, Orange=3, Red=×100, Gold=±5%. Value = 33 × 100 = 3300 Ω = 3.3 kΩ ±5%. Memorise with: 'BB Roy of Great Britain had a Very Good Wife who wore Gold and Silver': Black(0), Brown(1), Red(2), Orange(3), Yellow(4), Green(5), Blue(6), Violet(7), Grey(8), White(9)."},
+
+// MEASUREMENTS (16 more → total 20)
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"The SI unit of length is the:",
+ o:["Centimetre","Kilometre","Metre","Foot"],a:2,
+ ex:"The metre (m) is the SI base unit of length. Defined since 1983 as the distance light travels in vacuum in 1/299,792,458 of a second. This links length to the speed of light — a universal constant — making the definition reproducible anywhere."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"A student measures a block five times: 10.3, 10.2, 10.3, 10.4, 10.3 cm. The random error can be reduced by:",
+ o:["Using a ruler instead of caliper","Taking more measurements and averaging","Always rounding down","Measuring only once carefully"],a:1,
+ ex:"Random errors are unpredictable variations that scatter measurements above and below the true value. They can be reduced by repeating measurements and calculating the mean — individual random errors tend to cancel. Systematic errors (e.g. zero error on an instrument) cannot be averaged away."},
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"Distance is a scalar, but displacement is a vector. They differ because displacement includes:",
+ o:["Total path length","Direction from start to finish point","Speed of travel","Time taken"],a:1,
+ ex:"Distance is the total path length (scalar: magnitude only). Displacement is the straight-line distance from start to finish, with direction (vector). Running 400m around a track: distance = 400m, displacement = 0 (back at start). They differ whenever the path is not straight."},
+{c:'measure',d:'hard',img:'measurement_tools',
+ q:"In scientific notation, the number 0.000000045 is written as:",
+ o:["45×10⁻⁹","4.5×10⁻⁸","4.5×10⁸","45×10⁹"],a:1,
+ ex:"0.000000045 = 4.5×10⁻⁸. In scientific notation: one non-zero digit before the decimal point, then the appropriate power of 10. The exponent counts how many places the decimal point moved: moved 8 places right → exponent is −8."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"A vernier caliper (least count 0.1 mm) reads 23.0 mm on the main scale and the 7th vernier division aligns. The measurement is:",
+ o:["23.07 mm","23.7 mm","30.7 mm","23.0 mm"],a:1,
+ ex:"Vernier reading = main scale + (vernier division × least count) = 23.0 + (7 × 0.1) = 23.0 + 0.7 = 23.7 mm. The least count (0.1mm) is the smallest measurement a vernier caliper can resolve — 10× more precise than a standard ruler (1mm). For a 0.02mm vernier, the same 7th division would give 23.0 + 7×0.02 = 23.14 mm."},
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"Which of these is a vector quantity?",
+ o:["Mass","Temperature","Speed","Velocity"],a:3,
+ ex:"Velocity is a vector: it has both magnitude (speed) and direction (e.g. 30 m/s north). Mass, temperature, and speed are scalars — they have magnitude only. Other vectors: force, displacement, acceleration, momentum. Other scalars: distance, energy, power, density."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"The density of a material is defined as:",
+ o:["Mass × Volume","Mass / Volume","Volume / Mass","Force / Area"],a:1,
+ ex:"Density ρ = m/V (mass per unit volume). SI unit: kg/m³. Water: 1000 kg/m³. Gold: 19,300 kg/m³. Cork: ~120 kg/m³. Objects denser than water sink; less dense objects float. Density does not depend on sample size — it is an intrinsic material property."},
+{c:'measure',d:'hard',img:'measurement_tools',
+ q:"A micrometer reads 7.50 mm on the sleeve and 0.23 mm on the thimble. The measurement is:",
+ o:["7.73 mm","7.50 mm","7.23 mm","0.723 mm"],a:0,
+ ex:"Micrometer reading = sleeve reading + thimble reading = 7.50 + 0.23 = 7.73 mm. The sleeve (barrel) shows mm and 0.5mm. The thimble (rotating part) shows 0.01mm divisions. Always check for zero error: if jaws closed shows non-zero, subtract that from all readings."},
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"Accuracy and precision are different. A precise measurement is one that:",
+ o:["Is very close to the true value","Gives the same result each time it is repeated","Has many decimal places","Uses expensive equipment"],a:1,
+ ex:"Precision = repeatability/reproducibility (how clustered the results are). Accuracy = closeness to the true value. You can be precise but inaccurate (systematic error: all readings consistently wrong but consistent). You can be accurate but not precise (random scatter around true value)."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"The period T of a pendulum is measured 5 times: 1.98, 2.02, 1.99, 2.01, 2.00 s. The mean period is:",
+ o:["2.00 s","2.01 s","1.99 s","10.00 s"],a:0,
+ ex:"Mean = (1.98+2.02+1.99+2.01+2.00)/5 = 10.00/5 = 2.00 s. The mean minimises the effect of random errors. The spread (1.98 to 2.02) suggests an uncertainty of about ±0.02 s. Results would typically be quoted as T = 2.00 ± 0.02 s."},
+{c:'measure',d:'hard',img:'measurement_tools',
+ q:"Dimensional analysis: which of these equations is dimensionally correct? (where [v]=m/s, [a]=m/s², [t]=s, [x]=m)",
+ o:["v = a + t","v² = ax","v = at","x = vt²"],a:2,
+ ex:"Dimensional analysis checks if both sides have the same units. v = at: [m/s] = [m/s²]×[s] = [m/s] ✓. v = a+t: [m/s] ≠ [m/s²]+[s] ✗. v² = ax: [m²/s²] = [m/s²]×[m] = [m²/s²] ✓ — actually this one is also correct dimensionally (v²=2ax). x=vt²: [m] ≠ [m/s]×[s²]=[m·s] ✗. Answer: v=at."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"A stopwatch measures to 0.01 s. A student times 10 oscillations of a pendulum as 20.53 s. The period is:",
+ o:["20.53 s","2.053 s","0.2053 s","205.3 s"],a:1,
+ ex:"Period T = total time / number of oscillations = 20.53 / 10 = 2.053 s. Timing 10 oscillations rather than 1 reduces the percentage uncertainty in timing from ±0.01/2 = ±0.5% to ±0.01/20.53 = ±0.05%. This is standard technique to improve precision in pendulum experiments."},
+{c:'measure',d:'easy',img:'measurement_tools',
+ q:"The Kelvin scale of temperature differs from Celsius because:",
+ o:["1 Kelvin degree is larger than 1°C","Kelvin starts at absolute zero (−273°C), Celsius starts at water's freezing point","Kelvin measures pressure, not temperature","Kelvin only applies to gases"],a:1,
+ ex:"Kelvin = Celsius + 273. 0 K = absolute zero (−273°C), the theoretical minimum temperature where all molecular motion stops. 0°C = 273 K (water's freezing point). Kelvin is the SI base unit of temperature. Scientific equations (gas laws, Stefan-Boltzmann law) use Kelvin, not Celsius."},
+{c:'measure',d:'hard',img:'measurement_tools',
+ q:"Percentage uncertainty in area when length L = 5.0 ± 0.1 cm is measured and area = L²:",
+ o:["1%","2%","4%","0.5%"],a:2,
+ ex:"Percentage uncertainty in L = (0.1/5.0)×100% = 2%. For A = L², when a quantity is raised to a power n, the % uncertainty multiplies by n. %unc(A) = 2 × %unc(L) = 2 × 2% = 4%. This is why small measurement errors matter more in calculations involving squares or cubes."},
+{c:'measure',d:'medium',img:'measurement_tools',
+ q:"The speed of light in vacuum is exactly 299,792,458 m/s. In standard form to 3 significant figures:",
+ o:["3.00×10⁸ m/s","2.99×10⁸ m/s","3.00×10⁹ m/s","29.9×10⁷ m/s"],a:0,
+ ex:"To 3 s.f.: 299,792,458 → look at 4th digit (7) → round up → 300,000,000 = 3.00×10⁸ m/s. Note that 2.99×10⁸ is also 3 s.f. but represents 299,000,000 — that's rounding down. The 7 in the 4th position means we round up the 9 → carries → 3.00×10⁸. Standard form always has one non-zero digit before the decimal."},
+{c:'measure',d:'hard',img:'measurement_tools',
+ q:"In an experiment, a student gets results consistently 0.5 cm longer than the true value due to not resetting the ruler to zero. This is a:",
+ o:["Random error","Parallax error","Systematic error (zero error)","Gross error"],a:2,
+ ex:"A systematic error shifts ALL measurements in the same direction by the same amount — it doesn't average out with repetition. Zero error (not starting from 0) is a classic systematic error. It can be detected by calibration against a known standard and corrected for by subtracting 0.5 cm from all readings."},
+
+// LENSES (14 more → total 20)
+{c:'lens',d:'easy',img:'convex_lens',
+ q:"A convex lens is also called a ___ lens because it bends light rays toward the principal axis.",
+ o:["Diverging","Converging","Concave","Refracting"],a:1,
+ ex:"A convex (biconvex) lens is thicker in the middle and thinner at the edges. It refracts parallel light rays to converge at the focal point — hence 'converging' lens. Uses: magnifying glasses, camera lenses, eyepiece lenses in telescopes, the human eye's cornea and lens."},
+{c:'lens',d:'medium',img:'convex_lens',
+ q:"An object is placed at 2F of a convex lens (distance = 2 focal lengths). The image is formed:",
+ o:["At F, magnified","At 2F, same size as object","Between F and lens, virtual","At infinity"],a:1,
+ ex:"Lens formula: 1/v - 1/u = 1/f. Object at 2f: u=2f. 1/v = 1/f + 1/u = 1/f + 1/2f... (using real-is-positive convention varies). Result: image also at 2f on the other side, same size, real, inverted. Used in projectors when object is between F and 2F."},
+{c:'lens',d:'easy',img:'concave_lens',
+ q:"A concave lens is used to correct which vision defect?",
+ o:["Hyperopia (long-sightedness)","Presbyopia (age-related)","Myopia (short-sightedness)","Astigmatism"],a:2,
+ ex:"Myopia (short-sightedness): the eyeball is too long, so distant objects focus in front of the retina. A concave (diverging) lens spreads rays before they enter the eye, effectively moving the focal point back to the retina. Hyperopia is corrected with convex (converging) lenses."},
+{c:'lens',d:'medium',img:'refraction_diag',
+ q:"Total internal reflection occurs when:",
+ o:["Light travels from dense to less dense medium at angle greater than critical angle","Light travels from less dense to denser medium","Light hits a mirror at 90°","Refraction equals reflection"],a:0,
+ ex:"Total internal reflection (TIR): when light in a dense medium (e.g. glass, water) hits the boundary at an angle greater than the critical angle, ALL light reflects back — none refracts out. Optical fibres use TIR to transmit light signals around bends with near-zero loss over kilometres."},
+{c:'lens',d:'hard',img:'refraction_diag',
+ q:"The critical angle for glass (n=1.5) is approximately:",
+ o:["90°","41.8°","30°","48.6°"],a:1,
+ ex:"sin(c) = 1/n = 1/1.5 = 0.667 → c = sin⁻¹(0.667) ≈ 41.8°. Above this angle, TIR occurs. For water (n=1.33): c ≈ 48.8°. Diamond (n=2.42): c ≈ 24.4° — its very small critical angle causes TIR from many facets, producing brilliant sparkle."},
+{c:'lens',d:'easy',img:'convex_lens',
+ q:"A camera uses a convex lens to form an image on the sensor. The image is:",
+ o:["Virtual, upright, magnified","Real, inverted, diminished or magnified","Virtual, inverted, same size","Real, upright, diminished"],a:1,
+ ex:"Camera: object is beyond 2F → real, inverted, diminished image on the sensor (film). The shutter controls exposure time; aperture controls light entering. Digital sensors replace photographic film. Image is real (can be projected) and inverted (camera electronics flip it for display)."},
+{c:'lens',d:'medium',img:'refractive_index',
+ q:"An optical fibre transmits light signals. The core is made of glass (higher n) and the cladding of glass with lower n. Light stays in the core because of:",
+ o:["Refraction pushing light back","Total internal reflection at the core-cladding boundary","Magnetic field guiding the light","Reflection from the outer surface only"],a:1,
+ ex:"Optical fibres use TIR: the higher-refractive-index core surrounded by lower-n cladding. Light hitting the boundary at angles greater than the critical angle undergoes TIR and stays trapped in the core. A single fibre can carry thousands of simultaneous phone calls using different light wavelengths."},
+{c:'lens',d:'hard',img:'convex_lens',
+ q:"The power of a lens is P = 1/f (in dioptres, f in metres). A convex lens of focal length 25 cm has power:",
+ o:["+4 D","-4 D","25 D","0.25 D"],a:0,
+ ex:"P = 1/f = 1/0.25 = +4 D (dioptres). Convex (converging) lenses have positive power; concave (diverging) lenses have negative power. A reading glasses prescription of +2.0 D means convex lenses of focal length 0.5 m. Powers of lens combinations in contact add: P_total = P₁ + P₂."},
+{c:'lens',d:'medium',img:'refraction_diag',
+ q:"When a straw appears bent at the air-water boundary, this is because light:",
+ o:["Reflects at the surface","Diffracts around the straw","Refracts (bends) as it crosses the boundary","Is absorbed at the surface"],a:2,
+ ex:"Refraction: light bends when it crosses between two media of different optical density (different refractive indices). Light from the underwater part of the straw bends away from the normal as it exits water into air. Our brain traces it back in a straight line, making the straw appear displaced."},
+{c:'lens',d:'easy',img:'concave_lens',
+ q:"Why does a fish in a pond see objects above the water surface as if through a circular window?",
+ o:["Fish eyes are convex","All light from outside is refracted to enter within a cone of angle 2×critical angle","The water surface reflects infrared","Water absorbs all light outside a narrow range"],a:1,
+ ex:"This is Snell's window (or Snell's cone): all light from above the water's surface is refracted into a cone with half-angle equal to the critical angle (~48.8° for water). Outside this window, the fish sees only TIR of light from below — the underwater world reflected in the surface."},
+{c:'lens',d:'hard',img:'refraction_diag',
+ q:"A diamond (n=2.42) is submerged in water (n=1.33). Using Snell's Law (going from diamond to water), the critical angle is approximately:",
+ o:["33.3°","24.4°","56.7°","41.8°"],a:0,
+ ex:"For TIR at the diamond-water boundary: n₁sinθc = n₂sin90° → sinθc = n₂/n₁ = 1.33/2.42 = 0.550 → θc = sin⁻¹(0.550) ≈ 33.4°. In air (n₂=1): sinθc = 1/2.42 → θc ≈ 24.4°. The diamond has a larger critical angle in water than in air, reducing sparkle — why jewellery looks better out of water."},
+{c:'lens',d:'medium',img:'convex_lens',
+ q:"A projector creates a large image on a screen. The object (slide) must be placed:",
+ o:["Between F and the lens","At the focal point F","Between F and 2F","Beyond 2F"],a:2,
+ ex:"For a large real image (projector): object between F and 2F → image forms beyond 2F on the other side, real, inverted, magnified. The slide is placed upside-down in projectors so the image appears right-way-up on screen. This is also the principle of the slide projector and overhead projector."},
+{c:'lens',d:'easy',img:'convex_lens',
+ q:"The focal length of a lens is the distance from the lens to:",
+ o:["The object","The centre of the lens to the image","The point where parallel rays converge after passing through","The edge of the lens"],a:2,
+ ex:"The focal point F is where parallel rays (from a very distant object — effectively at infinity) converge after passing through a converging lens. The focal length f is the distance from the optical centre of the lens to this focal point. For diverging lenses, the focal point is virtual (where rays appear to come from)."},
+{c:'lens',d:'hard',img:'refractive_index',
+ q:"A lens maker's equation uses the radii of curvature of both lens surfaces. A plano-convex lens (one flat face, one curved) has one radius of curvature R and the other ∞. If n=1.5, f=20cm, find R.",
+ o:["10 cm","20 cm","5 cm","40 cm"],a:0,
+ ex:"Lens maker's equation: 1/f = (n-1)[1/R₁ - 1/R₂]. Flat surface: R₂=∞ → 1/R₂=0. So 1/f = (n-1)/R₁ → R₁ = f(n-1) = 20×0.5 = 10 cm. This equation links lens geometry to focal length, enabling lens designers to specify exact surface curvatures needed for a given focal length."},
+
+];
+</script>
+<script>
+// ══ THEME ══
+let isDark = localStorage.getItem('pnTheme') !== 'light';
+function applyTheme(dark) {
+  isDark = dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
+  document.getElementById('themeColorMeta').content = dark ? '#07090f' : '#f0f4ff';
+  localStorage.setItem('pnTheme', dark ? 'dark' : 'light');
+}
+function toggleTheme() { SND.click(); applyTheme(!isDark); }
+applyTheme(isDark);
+
+// ══ PARTICLE BG ══
+(()=>{
+  const c=document.getElementById('bg'),ctx=c.getContext('2d');
+  const resize=()=>{c.width=innerWidth;c.height=innerHeight};
+  resize();window.addEventListener('resize',resize);
+  const pts=Array.from({length:48},()=>({
+    x:Math.random()*innerWidth,y:Math.random()*innerHeight,
+    r:Math.random()*1.3+.25,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,
+    h:Math.random()>0.5?200:280,a:Math.random()*.45+.1
+  }));
+  const draw=()=>{
+    ctx.clearRect(0,0,c.width,c.height);
+    pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;
+      if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`hsla(${p.h},70%,70%,${p.a*.5})`;ctx.fill();
+    });
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);
+      if(d<100){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+        ctx.strokeStyle=`rgba(100,140,255,${.05*(1-d/100)})`;ctx.stroke();}
+    }
+    requestAnimationFrame(draw);
+  };draw();
+})();
+
+// ══ AUDIO ══
+let AC=null,sndOn=true;
+const getAC=()=>(AC=AC||new(window.AudioContext||window.webkitAudioContext)());
+const tone=(f,t,d,v=.14,del=0)=>{if(!sndOn)return;try{const a=getAC(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=t;o.frequency.value=f;const s=a.currentTime+del;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.01);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d+.05);}catch(e){}};
+const noiseBlip=(freq,dur)=>{if(!sndOn)return;try{const a=getAC(),buf=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.07;const src=a.createBufferSource(),filt=a.createBiquadFilter();filt.type='bandpass';filt.frequency.value=freq;filt.Q.value=6;src.buffer=buf;src.connect(filt);filt.connect(a.destination);src.start();}catch(e){}};
+let CAT_SND='';
+const SND={
+  click:()=>tone(440,'sine',.07,.07),
+  light_correct:()=>{tone(880,'sine',.14,.11);tone(1100,'sine',.1,.08,.09);tone(1320,'sine',.07,.06,.18)},
+  light_tick:()=>tone(1400,'sine',.04,.04),
+  mag_correct:()=>{
+    tone(55,'sawtooth',.18,.18);tone(55,'square',.18,.08);
+    tone(220,'sawtooth',.12,.09,.05);tone(440,'sawtooth',.08,.06,.1);
+    if(!sndOn)return;try{const a=getAC();const o=a.createOscillator(),g=a.createGain();o.type='sawtooth';o.frequency.setValueAtTime(80,a.currentTime+.15);o.frequency.linearRampToValueAtTime(320,a.currentTime+.5);g.gain.setValueAtTime(0,a.currentTime+.15);g.gain.linearRampToValueAtTime(.13,a.currentTime+.2);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.55);o.connect(g);g.connect(a.destination);o.start(a.currentTime+.15);o.stop(a.currentTime+.6);}catch(e){}
+    noiseBlip(60,.22);noiseBlip(120,.18);
+  },
+  mag_tick:()=>{tone(55,'sawtooth',.06,.1);tone(110,'square',.04,.05,.03)},
+  mag_wrong:()=>{
+    tone(80,'sawtooth',.22,.2);tone(60,'square',.18,.14,.06);
+    if(!sndOn)return;try{const a=getAC();const o=a.createOscillator(),g=a.createGain();o.type='sawtooth';o.frequency.setValueAtTime(200,a.currentTime);o.frequency.linearRampToValueAtTime(40,a.currentTime+.28);g.gain.setValueAtTime(.14,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.32);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.35);}catch(e){}
+  },
+  sound_correct:()=>{tone(392,'triangle',.2,.13);tone(494,'triangle',.16,.1,.12);tone(587,'sine',.12,.08,.24)},
+  heat_correct:()=>{tone(220,'sawtooth',.15,.1);tone(330,'triangle',.12,.09,.15)},
+  gen_correct:()=>{tone(523,'triangle',.2,.13);tone(659,'triangle',.15,.1,.12);tone(784,'sine',.1,.08,.24)},
+  wrong:()=>{tone(180,'sawtooth',.2,.15);tone(160,'sawtooth',.15,.12,.1)},
+  timeout:()=>{tone(200,'sawtooth',.28,.1);tone(160,'sawtooth',.24,.1,.15);tone(140,'sawtooth',.2,.14,.3)},
+};
+const playSndCorrect=()=>{
+  if(CAT_SND==='light')SND.light_correct();
+  else if(CAT_SND==='magnet')SND.mag_correct();
+  else if(CAT_SND==='sound')SND.sound_correct();
+  else if(CAT_SND==='heat')SND.heat_correct();
+  else SND.gen_correct();
+};
+const playSndTick=()=>{if(CAT_SND==='light')SND.light_tick();else if(CAT_SND==='magnet')SND.mag_tick();else tone(900,'sine',.06,.08);};
+function toggleSnd(){sndOn=!sndOn;document.getElementById('sndBtn').textContent=sndOn?'🔊 ON':'🔇 OFF';if(sndOn)SND.click();}
+
+// ══ STATE ══
+let G={questions:[],qi:0,score:0,xp:0,correct:0,wrong:0,streak:0,maxStreak:0,timerVal:0,timer:null,answered:false,log:[],diff:'easy',cat:'all'};
+let P={totalXP:0,level:1,gStreak:0,games:0,bestPct:0,totalAns:0,lb:[]};
+const XPL=[0,300,700,1300,2100,3200,4800,7000,10000,14000,20000];
+const loadP=()=>{try{const s=localStorage.getItem('pnexus2');if(s)P=JSON.parse(s);}catch(e){}};
+const saveP=()=>{try{localStorage.setItem('pnexus2',JSON.stringify(P));}catch(e){}};
+const $=id=>document.getElementById(id);
+const show=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'})};
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}return a};
+
+// Timer circumference for r=22: 2π×22 ≈ 138
+const CIRC=138;
+
+// ══ HOME ══
+function buildHome(){
+  loadP();
+  $('sGames').textContent=P.games;
+  $('sBest').textContent=P.bestPct;
+  $('sXP').textContent=P.totalXP;
+  $('sAns').textContent=P.totalAns;
+  $('hLevel').textContent=P.level;
+  $('hStreak').textContent='🔥'+P.gStreak;
+  const lv=P.level-1,x0=XPL[Math.min(lv,XPL.length-2)]||0,x1=XPL[Math.min(P.level,XPL.length-1)]||99999;
+  const pct=Math.min(100,Math.round(((P.totalXP-x0)/(x1-x0))*100));
+  $('hXPBar').style.width=pct+'%';
+  $('hXPLabel').textContent=P.totalXP+' / '+x1;
+  const grid=$('catGrid');grid.innerHTML='';
+  CATS.forEach(c=>{
+    const cnt=QS.filter(q=>q.c===c.id).length;
+    const b=document.createElement('button');b.className='cat-btn';
+    b.style.setProperty('--ca',c.a);b.style.setProperty('--cb',c.b);
+    b.innerHTML=`<span class="cat-icon">${c.icon}</span><div class="cat-name">${c.name}</div><div class="cat-cnt">${cnt} Q</div>`;
+    b.onclick=()=>{SND.click();startGame(c.id)};grid.appendChild(b);
+  });
+  buildLB();show('sHome');
+}
+function buildLB(){
+  const lb=$('lbBox');
+  if(!P.lb||!P.lb.length){lb.innerHTML='<div style="color:var(--t2);font-size:.82rem;text-align:center;padding:8px">No scores yet — play your first game!</div>';return;}
+  lb.innerHTML=P.lb.slice(0,5).map((e,i)=>`
+    <div class="lb-row">
+      <div style="width:30px;font-family:'SF Mono','Courier New',monospace;font-size:1rem;color:${['#ffe57f','#b0bec5','#ff8a65','var(--t2)','var(--t2)'][i]}">${['🥇','🥈','🥉','4th','5th'][i]}</div>
+      <div style="flex:1;font-size:.8rem">${e.cat} · ${e.diff}</div>
+      <div style="font-family:'SF Mono','Courier New',monospace;color:var(--accent);font-weight:700">${e.score} pts</div>
+    </div>`).join('');
+}
+let curDiff='easy';
+function setDiff(el){curDiff=el.dataset.d;document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');SND.click();}
+
+// ══ GAME ══
+function startGame(catId){
+  SND.click();
+  let pool=catId==='all'?[...QS]:QS.filter(q=>q.c===catId);
+  pool=pool.filter(q=>curDiff==='all'||q.d===curDiff);
+  if(!pool.length)pool=[...QS];
+  pool=shuffle(pool);
+  G={questions:pool.slice(0,Math.min(15,pool.length)),qi:0,score:0,xp:0,correct:0,wrong:0,streak:0,maxStreak:0,timerVal:0,timer:null,answered:false,log:[],diff:curDiff,cat:catId};
+  show('sQuiz');renderQ();
+}
+
+function renderQ(){
+  const q=G.questions[G.qi];
+  G.answered=false;CAT_SND=q.c;
+  const cat=CATS.find(c=>c.id===q.c)||{name:q.c,a:'#7ee8fa'};
+
+  $('qScore').textContent=G.score;
+  $('qXP').textContent=G.xp;
+  $('qNum').textContent=`Q ${G.qi+1}/${G.questions.length}`;
+  $('qCatLabel').textContent=cat.name;
+  $('qCatLabel').style.color=cat.a;
+  $('progFill').style.width=Math.round((G.qi/G.questions.length)*100)+'%';
+  $('qDot').style.background=cat.a;
+  $('qCatName').textContent=cat.name;
+  $('qDiff').textContent=q.d.toUpperCase();
+  $('qText').textContent=q.q;
+
+  // Diagram
+  const dw=$('diagWrap');
+  if(q.img&&DIAG[q.img]){dw.style.display='flex';dw.innerHTML=DIAG[q.img];}
+  else{dw.style.display='none';dw.innerHTML='';}
+
+  // Shuffle options
+  const idxs=shuffle([0,1,2,3].slice(0,q.o.length));
+  const newCorr=idxs.indexOf(q.a);
+  const og=$('optsGrid');og.innerHTML='';
+  ['A','B','C','D'].slice(0,q.o.length).forEach((lbl,ni)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML=`<span class="opt-lbl">${lbl}</span><span>${q.o[idxs[ni]]}</span>`;
+    b.onclick=()=>pick(ni,newCorr,og,q);
+    og.appendChild(b);
+  });
+
+  // Streak dots
+  const sd=$('sdots');sd.innerHTML='';
+  const dc=Math.min(12,G.questions.length);
+  for(let i=0;i<dc;i++){const d=document.createElement('div');d.className='sdot';if(i<G.log.length)d.classList.add(G.log[i]?'hit':'miss');sd.appendChild(d);}
+
+  $('nextBtn').classList.add('hidden');
+  $('explainBox').classList.remove('show');
+  $('expText').textContent='';
+
+  // Timer
+  clearInterval(G.timer);
+  const tl=G.diff==='easy'?30:G.diff==='medium'?20:15;
+  G.timerVal=tl;updateTimer(tl,tl);
+  G.timer=setInterval(()=>{
+    G.timerVal--;updateTimer(G.timerVal,tl);
+    if(G.timerVal<=5&&G.timerVal>0)playSndTick();
+    if(G.timerVal<=0){clearInterval(G.timer);SND.timeout();timeOut(newCorr,og,q);}
+  },1000);
+}
+
+function updateTimer(v,max){
+  const dash=CIRC*(1-(v/max));
+  $('tArc').style.strokeDashoffset=dash;
+  $('tNum').textContent=v;
+  const pct=v/max;
+  const col=pct>.5?'var(--accent)':pct>.25?'var(--elec)':'var(--wrong)';
+  $('tArc').style.stroke=col;
+  $('tNum').style.color=pct>.5?'var(--t1)':col;
+}
+
+function pick(chosen,correct,og,q){
+  if(G.answered)return;G.answered=true;clearInterval(G.timer);
+  const ok=chosen===correct;
+  const tBonus=Math.floor(G.timerVal*2);
+  const dm={easy:1,medium:1.5,hard:2}[G.diff]||1;
+  og.querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correct)b.classList.add('correct');
+    else if(i===chosen&&!ok)b.classList.add('wrong');
+  });
+  if(ok){
+    G.correct++;G.streak++;G.maxStreak=Math.max(G.maxStreak,G.streak);
+    const pts=Math.round((100+tBonus)*dm),xg=Math.round((30+tBonus)*dm);
+    G.score+=pts;G.xp+=xg;G.log.push(true);
+    playSndCorrect();flash('+'+xg+' XP',true);
+  } else {
+    G.wrong++;G.streak=0;G.log.push(false);
+    CAT_SND==='magnet'?SND.mag_wrong():SND.wrong();
+    flash('✕',false);
+  }
+  $('qScore').textContent=G.score;$('qXP').textContent=G.xp;
+  const dots=$('sdots').querySelectorAll('.sdot');
+  const di=G.log.length-1;if(dots[di])dots[di].classList.add(ok?'hit':'miss');
+  $('expText').textContent=q.ex;
+  $('explainBox').classList.add('show');
+  $('nextBtn').classList.remove('hidden');
+  // Scroll explanation into view on mobile
+  setTimeout(()=>$('explainBox').scrollIntoView({behavior:'smooth',block:'nearest'}),120);
+}
+
+function timeOut(correct,og,q){
+  if(G.answered)return;G.answered=true;G.wrong++;G.streak=0;G.log.push(false);
+  og.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('correct');});
+  $('expText').textContent='⏱ Time up! '+q.ex;
+  $('explainBox').classList.add('show');
+  $('nextBtn').classList.remove('hidden');
+}
+
+function flash(txt,good){
+  const el=$('xpFlash');
+  el.textContent=txt;el.style.color=good?'var(--correct)':'var(--wrong)';
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+}
+
+function nextQ(){SND.click();G.qi++;if(G.qi>=G.questions.length)endGame();else renderQ();}
+
+// ══ END ══
+function endGame(){
+  clearInterval(G.timer);
+  P.games++;P.totalXP+=G.xp;P.totalAns+=G.questions.length;
+  const pct=Math.round((G.correct/G.questions.length)*100);
+  if(pct>P.bestPct)P.bestPct=pct;
+  while(P.level<XPL.length&&P.totalXP>=XPL[P.level])P.level++;
+  P.gStreak=pct>=70?P.gStreak+1:0;
+  P.lb=P.lb||[];P.lb.push({score:G.score,cat:G.cat,diff:G.diff,pct});
+  P.lb.sort((a,b)=>b.score-a.score);P.lb=P.lb.slice(0,10);saveP();
+
+  $('rScore').textContent=G.score;
+  const gb=$('rGrade');
+  const gd=pct>=90?['S+ — Exceptional','var(--elec)','rgba(255,229,127,.08)']:
+    pct>=75?['A  — Excellent','var(--accent)','rgba(126,232,250,.08)']:
+    pct>=60?['B  — Proficient','var(--sound)','rgba(0,230,118,.08)']:
+    pct>=40?['C  — Developing','var(--heat)','rgba(255,107,53,.08)']:
+    ['D  — Keep Studying','var(--wrong)','rgba(255,82,82,.08)'];
+  gb.textContent=gd[0];gb.style.color=gd[1];gb.style.background=gd[2];gb.style.border=`1.5px solid ${gd[1]}`;
+
+  $('rBreak').innerHTML=[
+    ['correct','var(--correct)',G.correct,'Correct'],
+    ['wrong','var(--wrong)',G.wrong,'Wrong'],
+    ['pct','var(--t1)',pct+'%','Accuracy'],
+    ['xp','var(--mag)','+'+G.xp,'XP Gained'],
+    ['str','var(--sound)',G.maxStreak,'Best Streak'],
+    ['lv','var(--elec)','Lv.'+P.level,'Level'],
+  ].map(([,col,v,l])=>`<div class="bitem"><div class="bval" style="color:${col}">${v}</div><div class="blbl">${l}</div></div>`).join('');
+
+  const achs=[];
+  if(pct===100)achs.push({i:'💯',l:'Perfect'});
+  if(G.maxStreak>=5)achs.push({i:'🔥',l:'5× Streak'});
+  if(G.maxStreak>=10)achs.push({i:'⚡',l:'10× Streak'});
+  if(G.wrong===0&&G.questions.length>=5)achs.push({i:'✨',l:'Flawless'});
+  if(pct>=90)achs.push({i:'🏆',l:'Top Scientist'});
+  if(P.games>=5)achs.push({i:'🔬',l:'Lab Regular'});
+  if(P.games>=20)achs.push({i:'🎓',l:'Veteran'});
+  $('rAch').innerHTML=achs.length?achs.map(a=>`<div class="ach on">${a.i} ${a.l}</div>`).join(''):'<span style="color:var(--t2);font-size:.8rem">Keep playing to unlock achievements!</span>';
+
+  const used={};
+  G.questions.forEach((q,i)=>{if(!used[q.c])used[q.c]={c:0,t:0};used[q.c].t++;if(G.log[i])used[q.c].c++;});
+  $('rCatAcc').innerHTML=Object.keys(used).map(k=>{
+    const cat=CATS.find(c=>c.id===k)||{name:k,a:'#7ee8fa',icon:'⚛'};
+    const p=Math.round((used[k].c/used[k].t)*100);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rim)">
+      <span style="font-size:1.05rem">${cat.icon}</span>
+      <div style="flex:1"><div style="font-size:.8rem;margin-bottom:4px;color:var(--t1)">${cat.name}</div>
+        <div style="height:4px;background:var(--glass);border-radius:2px"><div style="height:100%;width:${p}%;background:${cat.a};border-radius:2px;transition:width .6s ease"></div></div></div>
+      <span style="font-family:'SF Mono','Courier New',monospace;font-size:.85rem;font-weight:700;color:${cat.a}">${p}%</span>
+    </div>`;
+  }).join('');
+
+  show('sResults');
+}
+
+function restartSame(){SND.click();startGame(G.cat);}
+function goHome(){clearInterval(G.timer);buildHome();}
+
+// ══ KEYBOARD ══
+document.addEventListener('keydown',e=>{
+  const scr=document.querySelector('.screen.active');if(!scr)return;
+  if(scr.id==='sQuiz'){
+    if(['1','2','3','4'].includes(e.key)){const i=+e.key-1;const os=document.querySelectorAll('.opt');if(os[i]&&!G.answered)os[i].click();}
+    if((e.key==='Enter'||e.key===' ')&&!$('nextBtn').classList.contains('hidden'))nextQ();
+    if(e.key.toLowerCase()==='s')toggleSnd();
+    if(e.key.toLowerCase()==='t')toggleTheme();
+  }
+});
+
+// ══ INIT ══
+loadP();buildHome();
+</script>
+</body>
+</html>
